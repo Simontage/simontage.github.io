@@ -193,7 +193,44 @@
                 col-md-10 col-md-offset-1
                 post-container">
 
-                
+                <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>Vim是 Vi 的增强版，基本预装在大部分 Linux 发行版中。Vim 是一种全屏幕、多模式文本编辑器。这篇备忘录从开始进入编辑器到退出保存这一过程来梳理 Vim 的操作。</p>
+<h2 id="进入编辑器"><a href="#进入编辑器" class="headerlink" title="进入编辑器"></a>进入编辑器</h2><p>方法一：</p>
+<p>直接在当前终端键入 vim</p>
+<p>方法二：</p>
+<p>在终端键入<code>vim file_name1</code>使用 vim打开指定的文件。当指定的文件存在时，那么打开指定的文件；当指定的文件不存在时，作为新文件打开，即在当前目录中新建此文件。</p>
+<p><strong>Vim 的模式</strong></p>
+<p>Vim 有三种常用模式，分别是 Normal-mode、command-mode、Insert-mode</p>
+<ul>
+<li>Normal-mode：正常模式，也是进入编辑器后的默认模式，此模式用来查看、复制和粘贴文本等操作。</li>
+<li>Command-mode：命令模式，在命令模式可以执行 vim 内置的各种命令，也可以执行 shell 命令。</li>
+<li>Insert-mode：插入模式，在插入模式下，对文本进行修改，如插入新的内容等。</li>
+</ul>
+<p>三种模式之间互相切换</p>
+<p><img src="http://om8bgr2y6.bkt.clouddn.com//vim_mode.png" alt=""></p>
+<h2 id="编辑操作"><a href="#编辑操作" class="headerlink" title="编辑操作"></a>编辑操作</h2><p>进入 Vim 编辑器后，那么编辑操作就开始了，进入 Vim 编辑器后默认的模式是 Normal-mode</p>
+<p><strong>Normal 模式下的编辑操作</strong></p>
+<p>假设当前打开的文件是已经存在的文件。Normal 模式下的操作有：光标移动、复制粘贴删除、替换等</p>
+<p><strong>1.光标移动</strong></p>
+<p>光标移动有字符移动、单词移动、行内和行间移动、段落间移动</p>
+<ul>
+<li><p>字符移动</p>
+<p>在 Normal 模式下，使用 h、j、k、l 键移动光标。可以使用数字加上方向键(hjkl)来跳转多个字符。</p>
+<p><img src="http://om8bgr2y6.bkt.clouddn.com//vim_hjkl.png" alt=""></p>
+</li>
+<li><p>单词移动</p>
+<p>在 Normal 模式下，使用 w、b、e 以单词为单位移动光标。单词移动要比字符移动快捷一些，刻意练习单词移动，用来提高效率。</p>
+<p><img src="http://om8bgr2y6.bkt.clouddn.com//vim_wbe.png" alt=""></p>
+<p>w 应该是 word 的意思，1个 w 就向后移动一个单词，光标落在下个单词的词首；</p>
+<p>e 应该是 end 的意思，1个 e 向后移动一个单词，光标落在词尾；</p>
+<p>b 应该是 back 的一次，一个 b 就 向前移动一个单词，光标落在词首。</p>
+</li>
+<li><p>行内和行间移动、句子间移动和段落间移动</p>
+<p>在行内移动中，使用<code>0</code>跳转至绝对行首，使用<code>^</code>跳转到第一个非空白字符行首，使用<code>$</code>跳转至绝对行尾。</p>
+<p>在行间移动中，使用<code>行号G</code>跳转至指定行的非空行首</p>
+</li>
+</ul>
+<p>  ​</p>
+<h2 id="保存和退出编辑器"><a href="#保存和退出编辑器" class="headerlink" title="保存和退出编辑器"></a>保存和退出编辑器</h2><h2 id="进阶操作"><a href="#进阶操作" class="headerlink" title="进阶操作"></a>进阶操作</h2>
 
                 <hr>
 
