@@ -90,14 +90,14 @@
 
                         
                         <li>
-                            <a href="/archives/">Archives</a>
+                            <a href="/about/">About</a>
                         </li>
                         
                     
 
                         
                         <li>
-                            <a href="/about/">About</a>
+                            <a href="/archives/">Archives</a>
                         </li>
                         
                     
@@ -173,7 +173,7 @@
                         
                     </div>
                     <h1>Vim 备忘录</h1>
-                    <h2 class="subheading"> 这真的是最后一次整理 VIM</h2>
+                    <h2 class="subheading">这真的是最后一次整理 VIM</h2>
                     <span class="meta">
                         Posted by Manson on
                         2017-12-24
@@ -195,7 +195,7 @@
                 col-md-10 col-md-offset-1
                 post-container">
 
-                <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>Vim是 Vi 的增强版，基本预装在大部分 Linux 发行版中。Vim 是一种全屏幕、多模式文本编辑器。这篇备忘录从开始进入编辑器到退出保存这一过程来梳理 Vim 的操作。</p>
+                <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>Vim是 Vi 的增强版，基本预装在大部分 Linux 发行版中。Vim 是一种全屏幕、多模式文本编辑器。这篇备忘录从开始进入编辑器到退出保存这一过程来梳理 Vim 的基本操作，包括 Vim 的模式 ，插入、复制删除和粘贴、替换查找文本等。</p>
 <h2 id="进入编辑器"><a href="#进入编辑器" class="headerlink" title="进入编辑器"></a>进入编辑器</h2><p>方法一：</p>
 <p>直接在当前终端键入 vim</p>
 <p>方法二：</p>
@@ -227,7 +227,7 @@
 <p>b (back) ，一个 b 就 向前移动一个单词，光标落在词首。</p>
 </li>
 <li><p>行内和行间移动、句子间移动和段落间移动</p>
-<p>在行内移动中，使用<code>0</code>跳转至绝对行首，使用<code>^</code>跳转到第一个非空白字符行首，使用<code>$</code>跳转至绝对行尾。</p>
+<p>在行内移动中，使用<code>0</code>跳转至绝对行首，使用<code>^</code>跳转到第一个非空白字符行首，使用<code>$</code>跳转至绝对行尾。使用<code>f/F + 字符</code>移动至指定的字符位置，<code>f</code>向从左至右跳转，<code>F</code>相反。</p>
 <p>在行间移动中，使用<code>行号G</code>跳转至指定行的非空行首，使用<code>G</code>跳转至最后一行的非空行首，使用<code>gg</code>跳转至首行非空行首。</p>
 <p>在句子间移动中，使用<code>)</code>跳转至下一句，使用<code>(</code>跳转至上一句。在段落间移动中，使用<code>}</code>跳转至下一段落，使用<code>{</code>跳转至上一段落。句子和段落移动使用的频率相对较低。</p>
 <p>实际上还有更多的光标移动方法，只是使用的频率相对较低。</p>
@@ -237,14 +237,14 @@
 <ul>
 <li><p>删除 - d</p>
 <p>使用<code>x</code>删除光标所在处的字符，使用<code>数字x</code>删除光标所在处向后的指定个字符；</p>
+<p>使用<code>df 单个字符</code>删除光标到指定字符间的文本。</p>
 <p>使用<code>dd</code>删除光标所在处的整行字符，删除的文本存入寄存器中，随后使用<code>p</code>可以粘贴删除的文本，使用<code>数字dd</code>删除光标所在行的指定行数</p>
-<p>使用<code>d</code>和各种光标跳转命令配合：</p>
-<p>​</p>
+<p>使用<code>d</code>和各种光标定位符配合，如<code>d0</code>、<code>d^</code>、<code>d$</code>、<code>dw</code>、<code>de</code>、<code>db</code>等，可以删除当前光标至指定位置的文本</p>
 </li>
 <li><p>替换/改变 - c/r</p>
 <p>使用<code>cc</code>删除光标当前所在行，并转为 Insert 模式，使用<code>c$</code>删除光标所在处至行尾，并转为 Insert 模式，使用<code>数字cc</code>删除指定数量的行后转为 Insert 模式。</p>
 <p><code>c</code>命令也可以结合各种位置操作，参考 <code>d</code></p>
-<p>使用<code>r</code>替换当前光标所在出的字符 </p>
+<p>使用<code>r</code>替换当前光标所在处的字符 ，使用<code>R</code>替换当前光标所在处以及之后的多个字符。</p>
 </li>
 <li><p>复制 - y</p>
 <p>使用<code>yy</code>复制光标所处的一整行，使用<code>数字yy</code>复制光标所在的指定个数行的文本，使用<code>y$</code>复制当前光标所在出至绝对行尾的文本。</p>
@@ -273,7 +273,17 @@
 <p>在末行模式中，可以通过<code>start,end</code>来定位一个范围，如<code>10,19</code>或<code>10,+9</code>，都表示选择第10行到第19行的文本。在范围定界中，<code>.</code>表示光标所在的行，<code>%</code>表示全文，<code>$</code>表示文件末尾。也可以使用<code>.,$-2</code>，表示从当前行到文档末尾倒数第二行。</p>
 <p>范围定界还可以使用模式<code>\pat1\,\pat2\</code>，表示从当前光标所在行第一次被模式1匹配到的行到被模式2匹配到的行。</p>
 <p><strong>2.查找替换</strong></p>
-<h2 id="保存和退出编辑器"><a href="#保存和退出编辑器" class="headerlink" title="保存和退出编辑器"></a>保存和退出编辑器</h2><h2 id="最后"><a href="#最后" class="headerlink" title="最后"></a>最后</h2><p>推荐一篇关于 Vim 的翻译文章：<a href="http://coolshell.cn/articles/5426.html" target="_blank" rel="noopener">简明 VIM 练级攻略</a></p>
+<p>在末行模式中，使用<code>:地址定界s/查找模式/替换后的内容/gi/</code>进行查找并替换操作。查找模式是正则表达式，替换后的内容可以使用引用，但不可以使用模式。g 表示全局替换，即把每一行出现多处匹配的内容都进行替换；i 表示忽略大小写。</p>
+<p>查找替换使用的分隔符，可以使用<code>/</code>也可以使用<code>@</code>或<code>#</code>等特殊字符。</p>
+<p>?? (&amp;) 如：将一个文本文件中非#开头的行加上#号：<code>:1,30s/^[^#].*/#&amp;/g</code></p>
+<h2 id="保存和退出编辑器"><a href="#保存和退出编辑器" class="headerlink" title="保存和退出编辑器"></a>保存和退出编辑器</h2><p>在打开 Vim 时，指定了文件名：</p>
+<p>Normal 模式，使用<code>ZZ</code>保存修改并退出；Command模式下，使用<code>:wq</code>或<code>:x</code>保存修改并退出，使用<code>:q!</code>放弃修改并退出。</p>
+<p>在打来 Vim 时，没有指定文件名：</p>
+<p>Command 模式下，<code>:w newfile</code>将修改保存至新文件newfile中，如果文件已存在，Vim 会提示File exists，如果要覆盖文件使用<code>:w! newfile</code>。保存完毕后，就可以使用<code>:q</code>退出 vim 了。</p>
+<h2 id="多文件编辑"><a href="#多文件编辑" class="headerlink" title="多文件编辑"></a>多文件编辑</h2><h2 id="Vim-的配置"><a href="#Vim-的配置" class="headerlink" title="Vim 的配置"></a>Vim 的配置</h2><p>在 Command 模式下，可以对 Vim 的 窗口属性进行设定：</p>
+<p><img src="http://om8bgr2y6.bkt.clouddn.com//vim_windows.png" alt=""></p>
+<p>全局的 Vim 配置文件在<code>/etc/vimrc</code>，用户的配置文件在<code>~/.vimrc</code>，配置文件中行首的双引号表示注释。</p>
+<h2 id="最后"><a href="#最后" class="headerlink" title="最后"></a>最后</h2><p>推荐一篇关于 Vim 的翻译文章：<a href="http://coolshell.cn/articles/5426.html" target="_blank" rel="noopener">简明 VIM 练级攻略</a></p>
 
 
                 <hr>
