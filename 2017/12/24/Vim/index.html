@@ -90,14 +90,14 @@
 
                         
                         <li>
-                            <a href="/about/">About</a>
+                            <a href="/archives/">Archives</a>
                         </li>
                         
                     
 
                         
                         <li>
-                            <a href="/archives/">Archives</a>
+                            <a href="/about/">About</a>
                         </li>
                         
                     
@@ -169,6 +169,8 @@
                         
                           <a class="tag" href="/tags/#Unix" title="Unix">Unix</a>
                         
+                          <a class="tag" href="/tags/#基本功" title="基本功">基本功</a>
+                        
                     </div>
                     <h1>Vim 备忘录</h1>
                     <h2 class="subheading"> 这真的是最后一次整理 VIM</h2>
@@ -208,7 +210,7 @@
 <p>三种模式之间互相切换</p>
 <p><img src="http://om8bgr2y6.bkt.clouddn.com//vim_mode.png" alt=""></p>
 <h2 id="编辑操作"><a href="#编辑操作" class="headerlink" title="编辑操作"></a>编辑操作</h2><p>进入 Vim 编辑器后，那么编辑操作就开始了，进入 Vim 编辑器后默认的模式是 Normal-mode</p>
-<p><strong>Normal 模式下的编辑操作</strong></p>
+<p><strong>Normal 模式下的编辑操作-移动、复制粘贴和删除</strong></p>
 <p>假设当前打开的文件是已经存在的文件。Normal 模式下的操作有：光标移动、复制粘贴删除、替换等</p>
 <p><strong>1.光标移动</strong></p>
 <p>光标移动有字符移动、单词移动、行内和行间移动、段落间移动</p>
@@ -220,17 +222,58 @@
 <li><p>单词移动</p>
 <p>在 Normal 模式下，使用 w、b、e 以单词为单位移动光标。单词移动要比字符移动快捷一些，刻意练习单词移动，用来提高效率。</p>
 <p><img src="http://om8bgr2y6.bkt.clouddn.com//vim_wbe.png" alt=""></p>
-<p>w 应该是 word 的意思，1个 w 就向后移动一个单词，光标落在下个单词的词首；</p>
-<p>e 应该是 end 的意思，1个 e 向后移动一个单词，光标落在词尾；</p>
-<p>b 应该是 back 的一次，一个 b 就 向前移动一个单词，光标落在词首。</p>
+<p>w (word) ，1个 w 就向后移动一个单词，光标落在下个单词的词首；</p>
+<p>e (end) ，1个 e 向后移动一个单词，光标落在词尾；</p>
+<p>b (back) ，一个 b 就 向前移动一个单词，光标落在词首。</p>
 </li>
 <li><p>行内和行间移动、句子间移动和段落间移动</p>
 <p>在行内移动中，使用<code>0</code>跳转至绝对行首，使用<code>^</code>跳转到第一个非空白字符行首，使用<code>$</code>跳转至绝对行尾。</p>
-<p>在行间移动中，使用<code>行号G</code>跳转至指定行的非空行首</p>
+<p>在行间移动中，使用<code>行号G</code>跳转至指定行的非空行首，使用<code>G</code>跳转至最后一行的非空行首，使用<code>gg</code>跳转至首行非空行首。</p>
+<p>在句子间移动中，使用<code>)</code>跳转至下一句，使用<code>(</code>跳转至上一句。在段落间移动中，使用<code>}</code>跳转至下一段落，使用<code>{</code>跳转至上一段落。句子和段落移动使用的频率相对较低。</p>
+<p>实际上还有更多的光标移动方法，只是使用的频率相对较低。</p>
 </li>
 </ul>
-<p>  ​</p>
-<h2 id="保存和退出编辑器"><a href="#保存和退出编辑器" class="headerlink" title="保存和退出编辑器"></a>保存和退出编辑器</h2><h2 id="进阶操作"><a href="#进阶操作" class="headerlink" title="进阶操作"></a>进阶操作</h2><h2 id="最后"><a href="#最后" class="headerlink" title="最后"></a>最后</h2><p>推荐一篇关于 Vim 的翻译文章：<a href="http://coolshell.cn/articles/5426.html" target="_blank" rel="noopener">简明 VIM 练级攻略</a></p>
+<p><strong>2.复制粘贴删除</strong></p>
+<ul>
+<li><p>删除 - d</p>
+<p>使用<code>x</code>删除光标所在处的字符，使用<code>数字x</code>删除光标所在处向后的指定个字符；</p>
+<p>使用<code>dd</code>删除光标所在处的整行字符，删除的文本存入寄存器中，随后使用<code>p</code>可以粘贴删除的文本，使用<code>数字dd</code>删除光标所在行的指定行数</p>
+<p>使用<code>d</code>和各种光标跳转命令配合：</p>
+<p>​</p>
+</li>
+<li><p>替换/改变 - c/r</p>
+<p>使用<code>cc</code>删除光标当前所在行，并转为 Insert 模式，使用<code>c$</code>删除光标所在处至行尾，并转为 Insert 模式，使用<code>数字cc</code>删除指定数量的行后转为 Insert 模式。</p>
+<p><code>c</code>命令也可以结合各种位置操作，参考 <code>d</code></p>
+<p>使用<code>r</code>替换当前光标所在出的字符 </p>
+</li>
+<li><p>复制 - y</p>
+<p>使用<code>yy</code>复制光标所处的一整行，使用<code>数字yy</code>复制光标所在的指定个数行的文本，使用<code>y$</code>复制当前光标所在出至绝对行尾的文本。</p>
+</li>
+<li><p>粘贴和剪切</p>
+<p>当复制或删除的是整行时：</p>
+<p>粘贴到当前光标所在行的下方 ：(小写)<code>p</code></p>
+<p>粘贴当前光标所在行的上方：（大写）<code>P</code></p>
+<p>当复制或删除的不是整行文本时：</p>
+<p>粘贴到当前光标所在字符后：（大写）<code>P</code></p>
+<p>粘贴到当前光标所在字符前：（小写）<code>P</code></p>
+</li>
+<li><p>撤销</p>
+<p>使用<code>u</code>撤销上一次操作，撤销多次操作使用<code>数字u</code>，默认可撤销的最大次数为50次。</p>
+<p><code>Ctrl+r</code>是重做命令，也就是撤销此前的撤销操作。</p>
+</li>
+</ul>
+<p><strong>3.翻屏</strong></p>
+<p><img src="http://om8bgr2y6.bkt.clouddn.com//Snip20171227_4.png" alt=""></p>
+<p><strong>4.查找</strong></p>
+<p>在 Normal 模式中，键入<code>/keyword</code>或<code>?keyword</code>，可以对全文进行查找操作，查找的结果高亮显示，使用<code>n</code>和<code>N</code>来查看查找结果。</p>
+<p>关闭高亮使用<code>:set nohlsearch</code>，不过至对当前 shell 生效。查找也支持正则表达式。</p>
+<p><strong>Command 模式下的编辑操作</strong></p>
+<p>在 Normal 模式下，键入<code>:</code>即进入 Command 模式。</p>
+<p><strong>1.范围定界</strong></p>
+<p>在末行模式中，可以通过<code>start,end</code>来定位一个范围，如<code>10,19</code>或<code>10,+9</code>，都表示选择第10行到第19行的文本。在范围定界中，<code>.</code>表示光标所在的行，<code>%</code>表示全文，<code>$</code>表示文件末尾。也可以使用<code>.,$-2</code>，表示从当前行到文档末尾倒数第二行。</p>
+<p>范围定界还可以使用模式<code>\pat1\,\pat2\</code>，表示从当前光标所在行第一次被模式1匹配到的行到被模式2匹配到的行。</p>
+<p><strong>2.查找替换</strong></p>
+<h2 id="保存和退出编辑器"><a href="#保存和退出编辑器" class="headerlink" title="保存和退出编辑器"></a>保存和退出编辑器</h2><h2 id="最后"><a href="#最后" class="headerlink" title="最后"></a>最后</h2><p>推荐一篇关于 Vim 的翻译文章：<a href="http://coolshell.cn/articles/5426.html" target="_blank" rel="noopener">简明 VIM 练级攻略</a></p>
 
 
                 <hr>
@@ -277,6 +320,8 @@
                           <a class="tag" href="/tags/#Linux" title="Linux">Linux</a>
                         
                           <a class="tag" href="/tags/#Unix" title="Unix">Unix</a>
+                        
+                          <a class="tag" href="/tags/#基本功" title="基本功">基本功</a>
                         
                     </div>
                 </section>
