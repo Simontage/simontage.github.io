@@ -90,14 +90,14 @@
 
                         
                         <li>
-                            <a href="/about/">About</a>
+                            <a href="/archives/">Archives</a>
                         </li>
                         
                     
 
                         
                         <li>
-                            <a href="/archives/">Archives</a>
+                            <a href="/about/">About</a>
                         </li>
                         
                     
@@ -228,7 +228,7 @@
 </li>
 <li><p>行内和行间移动、句子间移动和段落间移动</p>
 <p>在行内移动中，使用<code>0</code>跳转至绝对行首，使用<code>^</code>跳转到第一个非空白字符行首，使用<code>$</code>跳转至绝对行尾。使用<code>f/F + 字符</code>移动至指定的字符位置，<code>f</code>向从左至右跳转，<code>F</code>相反。</p>
-<p>在行间移动中，使用<code>行号G</code>跳转至指定行的非空行首，使用<code>G</code>跳转至最后一行的非空行首，使用<code>gg</code>跳转至首行非空行首。</p>
+<p>在行间移动中，使用<code>行号G</code>或<code>:行号</code>跳转至指定行的非空行首，使用<code>G</code>跳转至最后一行的非空行首，使用<code>gg</code>跳转至首行非空行首。使用<code>数字-</code>或<code>数字k</code>将光标向上移动指定行数，使用<code>数字+</code>或<code>9空格</code>、<code>9j</code>将光标向下移动指定行数。</p>
 <p>在句子间移动中，使用<code>)</code>跳转至下一句，使用<code>(</code>跳转至上一句。在段落间移动中，使用<code>}</code>跳转至下一段落，使用<code>{</code>跳转至上一段落。句子和段落移动使用的频率相对较低。</p>
 <p>实际上还有更多的光标移动方法，只是使用的频率相对较低。</p>
 </li>
@@ -244,7 +244,7 @@
 <li><p>替换/改变 - c/r</p>
 <p>使用<code>cc</code>删除光标当前所在行，并转为 Insert 模式，使用<code>c$</code>删除光标所在处至行尾，并转为 Insert 模式，使用<code>数字cc</code>删除指定数量的行后转为 Insert 模式。</p>
 <p><code>c</code>命令也可以结合各种位置操作，参考 <code>d</code></p>
-<p>使用<code>r</code>替换当前光标所在处的字符 ，使用<code>R</code>替换当前光标所在处以及之后的多个字符。</p>
+<p>使用<code>r</code>替换当前光标所在处的字符 ，使用<code>R</code>替换当前光标所在处以及之后的多个字符，直到<code>Esc</code>退出。</p>
 </li>
 <li><p>复制 - y</p>
 <p>使用<code>yy</code>复制光标所处的一整行，使用<code>数字yy</code>复制光标所在的指定个数行的文本，使用<code>y$</code>复制当前光标所在出至绝对行尾的文本。</p>
@@ -280,10 +280,13 @@
 <p>Normal 模式，使用<code>ZZ</code>保存修改并退出；Command模式下，使用<code>:wq</code>或<code>:x</code>保存修改并退出，使用<code>:q!</code>放弃修改并退出。</p>
 <p>在打来 Vim 时，没有指定文件名：</p>
 <p>Command 模式下，<code>:w newfile</code>将修改保存至新文件newfile中，如果文件已存在，Vim 会提示File exists，如果要覆盖文件使用<code>:w! newfile</code>。保存完毕后，就可以使用<code>:q</code>退出 vim 了。</p>
-<h2 id="多文件编辑"><a href="#多文件编辑" class="headerlink" title="多文件编辑"></a>多文件编辑</h2><h2 id="Vim-的配置"><a href="#Vim-的配置" class="headerlink" title="Vim 的配置"></a>Vim 的配置</h2><p>在 Command 模式下，可以对 Vim 的 窗口属性进行设定：</p>
+<h2 id="Vim-的配置"><a href="#Vim-的配置" class="headerlink" title="Vim 的配置"></a>Vim 的配置</h2><p>在 Command 模式下，可以对 Vim 的 窗口属性进行设定：</p>
 <p><img src="http://om8bgr2y6.bkt.clouddn.com//vim_windows.png" alt=""></p>
 <p>全局的 Vim 配置文件在<code>/etc/vimrc</code>，用户的配置文件在<code>~/.vimrc</code>，配置文件中行首的双引号表示注释。</p>
-<h2 id="最后"><a href="#最后" class="headerlink" title="最后"></a>最后</h2><p>推荐一篇关于 Vim 的翻译文章：<a href="http://coolshell.cn/articles/5426.html" target="_blank" rel="noopener">简明 VIM 练级攻略</a></p>
+<h2 id="最后"><a href="#最后" class="headerlink" title="最后"></a>最后</h2><p>这篇备忘录实际上都是比较基本的操作，Vim 是我个人认为的基本功，必须要熟练掌握，平时练习也应该多“偷偷懒”，想想怎么操作才更有效率。备忘录还少一部分内容是多文件编辑，以后会补上。</p>
+<p>推荐文章：</p>
+<p><a href="http://coolshell.cn/articles/5426.html" target="_blank" rel="noopener">简明 VIM 练级攻略</a></p>
+<p><a href="http://seanlook.com/2014/08/07/vim-tips/" target="_blank" rel="noopener">vim编辑器技巧备忘（初级-中级）</a></p>
 
 
                 <hr>
