@@ -13,11 +13,11 @@
 
     <title>
         
-          Vim 备忘录 - Manson的备忘录 | Manson&#39;s Notes
+          正则表达式在Shell中的使用 - Manson的备忘录 | Manson&#39;s Notes
         
     </title>
 
-    <link rel="canonical" href="https://simontage.github.io/2017/12/24/Vim/">
+    <link rel="canonical" href="https://simontage.github.io/2017/12/28/Regular-Expression/">
 
     <!-- Bootstrap Core CSS -->
     <link rel="stylesheet" href="/css/bootstrap.min.css">
@@ -155,7 +155,7 @@
 <!-- Post Header -->
 <style type="text/css">
     header.intro-header{
-        background-image: url('vim-bg.png')
+        background-image: url('regexp-bg.png')
     }
 </style>
 <header class="intro-header" >
@@ -167,16 +167,12 @@
                         
                           <a class="tag" href="/tags/#基本功" title="基本功">基本功</a>
                         
-                          <a class="tag" href="/tags/#Linux" title="Linux">Linux</a>
-                        
-                          <a class="tag" href="/tags/#Unix" title="Unix">Unix</a>
-                        
                     </div>
-                    <h1>Vim 备忘录</h1>
-                    <h2 class="subheading">这真的是最后一次整理 VIM</h2>
+                    <h1>正则表达式在Shell中的使用</h1>
+                    <h2 class="subheading"></h2>
                     <span class="meta">
                         Posted by Manson on
-                        2017-12-24
+                        2017-12-28
                     </span>
                 </div>
             </div>
@@ -195,98 +191,215 @@
                 col-md-10 col-md-offset-1
                 post-container">
 
-                <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>Vim是 Vi 的增强版，基本预装在大部分 Linux 发行版中。Vim 是一种全屏幕、多模式文本编辑器。这篇备忘录从开始进入编辑器到退出保存这一过程来梳理 Vim 的基本操作，包括 Vim 的模式 ，插入、复制删除和粘贴、替换查找文本等。</p>
-<h2 id="进入编辑器"><a href="#进入编辑器" class="headerlink" title="进入编辑器"></a>进入编辑器</h2><p>方法一：</p>
-<p>直接在当前终端键入 vim</p>
-<p>方法二：</p>
-<p>在终端键入<code>vim file_name1</code>使用 vim打开指定的文件。当指定的文件存在时，那么打开指定的文件；当指定的文件不存在时，作为新文件打开，即在当前目录中新建此文件。</p>
-<p><strong>Vim 的模式</strong></p>
-<p>Vim 有三种常用模式，分别是 Normal-mode、command-mode、Insert-mode</p>
-<ul>
-<li>Normal-mode：正常模式，也是进入编辑器后的默认模式，此模式用来查看、复制和粘贴文本等操作。</li>
-<li>Command-mode：命令模式，在命令模式可以执行 vim 内置的各种命令，也可以执行 shell 命令。</li>
-<li>Insert-mode：插入模式，在插入模式下，对文本进行修改，如插入新的内容等。</li>
-</ul>
-<p>三种模式之间互相切换</p>
-<p><img src="http://om8bgr2y6.bkt.clouddn.com//vim_mode.png" alt=""></p>
-<h2 id="编辑操作"><a href="#编辑操作" class="headerlink" title="编辑操作"></a>编辑操作</h2><p>进入 Vim 编辑器后，那么编辑操作就开始了，进入 Vim 编辑器后默认的模式是 Normal-mode</p>
-<p><strong>Normal 模式下的编辑操作-移动、复制粘贴和删除</strong></p>
-<p>假设当前打开的文件是已经存在的文件。Normal 模式下的操作有：光标移动、复制粘贴删除、替换等</p>
-<p><strong>1.光标移动</strong></p>
-<p>光标移动有字符移动、单词移动、行内和行间移动、段落间移动</p>
-<ul>
-<li><p>字符移动</p>
-<p>在 Normal 模式下，使用 h、j、k、l 键移动光标。可以使用数字加上方向键(hjkl)来跳转多个字符。</p>
-<p><img src="http://om8bgr2y6.bkt.clouddn.com//vim_hjkl.png" alt=""></p>
-</li>
-<li><p>单词移动</p>
-<p>在 Normal 模式下，使用 w、b、e 以单词为单位移动光标。单词移动要比字符移动快捷一些，刻意练习单词移动，用来提高效率。</p>
-<p><img src="http://om8bgr2y6.bkt.clouddn.com//vim_wbe.png" alt=""></p>
-<p>w (word) ，1个 w 就向后移动一个单词，光标落在下个单词的词首；</p>
-<p>e (end) ，1个 e 向后移动一个单词，光标落在词尾；</p>
-<p>b (back) ，一个 b 就 向前移动一个单词，光标落在词首。</p>
-</li>
-<li><p>行内和行间移动、句子间移动和段落间移动</p>
-<p>在行内移动中，使用<code>0</code>跳转至绝对行首，使用<code>^</code>跳转到第一个非空白字符行首，使用<code>$</code>跳转至绝对行尾。使用<code>f/F + 字符</code>移动至指定的字符位置，<code>f</code>向从左至右跳转，<code>F</code>相反。</p>
-<p>在行间移动中，使用<code>行号G</code>或<code>:行号</code>跳转至指定行的非空行首，使用<code>G</code>跳转至最后一行的非空行首，使用<code>gg</code>跳转至首行非空行首。使用<code>数字-</code>或<code>数字k</code>将光标向上移动指定行数，使用<code>数字+</code>或<code>9空格</code>、<code>9j</code>将光标向下移动指定行数。</p>
-<p>在句子间移动中，使用<code>)</code>跳转至下一句，使用<code>(</code>跳转至上一句。在段落间移动中，使用<code>}</code>跳转至下一段落，使用<code>{</code>跳转至上一段落。句子和段落移动使用的频率相对较低。</p>
-<p>实际上还有更多的光标移动方法，只是使用的频率相对较低。</p>
-</li>
-</ul>
-<p><strong>2.复制粘贴删除</strong></p>
-<ul>
-<li><p>删除 - d</p>
-<p>使用<code>x</code>删除光标所在处的字符，使用<code>数字x</code>删除光标所在处向后的指定个字符；</p>
-<p>使用<code>df 单个字符</code>删除光标到指定字符间的文本。</p>
-<p>使用<code>dd</code>删除光标所在处的整行字符，删除的文本存入寄存器中，随后使用<code>p</code>可以粘贴删除的文本，使用<code>数字dd</code>删除光标所在行的指定行数</p>
-<p>使用<code>d</code>和各种光标定位符配合，如<code>d0</code>、<code>d^</code>、<code>d$</code>、<code>dw</code>、<code>de</code>、<code>db</code>等，可以删除当前光标至指定位置的文本</p>
-</li>
-<li><p>替换/改变 - c/r</p>
-<p>使用<code>cc</code>删除光标当前所在行，并转为 Insert 模式，使用<code>c$</code>删除光标所在处至行尾，并转为 Insert 模式，使用<code>数字cc</code>删除指定数量的行后转为 Insert 模式。</p>
-<p><code>c</code>命令也可以结合各种位置操作，参考 <code>d</code></p>
-<p>使用<code>r</code>替换当前光标所在处的字符 ，使用<code>R</code>替换当前光标所在处以及之后的多个字符，直到<code>Esc</code>退出。</p>
-</li>
-<li><p>复制 - y</p>
-<p>使用<code>yy</code>复制光标所处的一整行，使用<code>数字yy</code>复制光标所在的指定个数行的文本，使用<code>y$</code>复制当前光标所在出至绝对行尾的文本。</p>
-</li>
-<li><p>粘贴和剪切</p>
-<p>当复制或删除的是整行时：</p>
-<p>粘贴到当前光标所在行的下方 ：(小写)<code>p</code></p>
-<p>粘贴当前光标所在行的上方：（大写）<code>P</code></p>
-<p>当复制或删除的不是整行文本时：</p>
-<p>粘贴到当前光标所在字符后：（大写）<code>P</code></p>
-<p>粘贴到当前光标所在字符前：（小写）<code>P</code></p>
-</li>
-<li><p>撤销</p>
-<p>使用<code>u</code>撤销上一次操作，撤销多次操作使用<code>数字u</code>，默认可撤销的最大次数为50次。</p>
-<p><code>Ctrl+r</code>是重做命令，也就是撤销此前的撤销操作。</p>
-</li>
-</ul>
-<p><strong>3.翻屏</strong></p>
-<p><img src="http://om8bgr2y6.bkt.clouddn.com//Snip20171227_4.png" alt=""></p>
-<p><strong>4.查找</strong></p>
-<p>在 Normal 模式中，键入<code>/keyword</code>或<code>?keyword</code>，可以对全文进行查找操作，查找的结果高亮显示，使用<code>n</code>和<code>N</code>来查看查找结果。</p>
-<p>关闭高亮使用<code>:set nohlsearch</code>，不过至对当前 shell 生效。查找也支持正则表达式。</p>
-<p><strong>Command 模式下的编辑操作</strong></p>
-<p>在 Normal 模式下，键入<code>:</code>即进入 Command 模式。</p>
-<p><strong>1.范围定界</strong></p>
-<p>在末行模式中，可以通过<code>start,end</code>来定位一个范围，如<code>10,19</code>或<code>10,+9</code>，都表示选择第10行到第19行的文本。在范围定界中，<code>.</code>表示光标所在的行，<code>%</code>表示全文，<code>$</code>表示文件末尾。也可以使用<code>.,$-2</code>，表示从当前行到文档末尾倒数第二行。</p>
-<p>范围定界还可以使用模式<code>\pat1\,\pat2\</code>，表示从当前光标所在行第一次被模式1匹配到的行到被模式2匹配到的行。</p>
-<p><strong>2.查找替换</strong></p>
-<p>在末行模式中，使用<code>:地址定界s/查找模式/替换后的内容/gi/</code>进行查找并替换操作。查找模式是正则表达式，替换后的内容可以使用引用，但不可以使用模式。g 表示全局替换，即把每一行出现多处匹配的内容都进行替换；i 表示忽略大小写。</p>
-<p>查找替换使用的分隔符，可以使用<code>/</code>也可以使用<code>@</code>或<code>#</code>等特殊字符。</p>
-<p>?? (&amp;) 如：将一个文本文件中非#开头的行加上#号：<code>:1,30s/^[^#].*/#&amp;/g</code></p>
-<h2 id="保存和退出编辑器"><a href="#保存和退出编辑器" class="headerlink" title="保存和退出编辑器"></a>保存和退出编辑器</h2><p>在打开 Vim 时，指定了文件名：</p>
-<p>Normal 模式，使用<code>ZZ</code>保存修改并退出；Command模式下，使用<code>:wq</code>或<code>:x</code>保存修改并退出，使用<code>:q!</code>放弃修改并退出。</p>
-<p>在打来 Vim 时，没有指定文件名：</p>
-<p>Command 模式下，<code>:w newfile</code>将修改保存至新文件newfile中，如果文件已存在，Vim 会提示File exists，如果要覆盖文件使用<code>:w! newfile</code>。保存完毕后，就可以使用<code>:q</code>退出 vim 了。</p>
-<h2 id="Vim-的配置"><a href="#Vim-的配置" class="headerlink" title="Vim 的配置"></a>Vim 的配置</h2><p>在 Command 模式下，可以对 Vim 的 窗口属性进行设定：</p>
-<p><img src="http://om8bgr2y6.bkt.clouddn.com//vim_windows.png" alt=""></p>
-<p>全局的 Vim 配置文件在<code>/etc/vimrc</code>，用户的配置文件在<code>~/.vimrc</code>，配置文件中行首的双引号表示注释。</p>
-<h2 id="最后"><a href="#最后" class="headerlink" title="最后"></a>最后</h2><p>这篇备忘录实际上都是比较基本的操作，Vim 是我个人认为的基本功，必须要熟练掌握，平时练习也应该多“偷偷懒”，想想怎么操作才更有效率。备忘录还少一部分内容是多文件编辑，以后会补上。</p>
-<p>推荐文章：</p>
-<p><a href="http://coolshell.cn/articles/5426.html" target="_blank" rel="noopener">简明 VIM 练级攻略</a></p>
-<p><a href="http://seanlook.com/2014/08/07/vim-tips/" target="_blank" rel="noopener">vim编辑器技巧备忘（初级-中级）</a></p>
+                <p>正则表达式是处理字符串的工具，使用正则表达式处理引擎工作。正则表达式是使用一类字符所书写出的模式（pattern），这一类字符在正则表达式中称为元字符，元字符是一些不表示字符本身含义，而是额外用于功能性描述的字符。</p>
+<p>正则表达式分为基本正则表达式和扩展正则表达式。</p>
+<h2 id="字符匹配"><a href="#字符匹配" class="headerlink" title="字符匹配"></a>字符匹配</h2><table>
+<thead>
+<tr>
+<th style="text-align:center">元字符</th>
+<th style="text-align:center">功能描述</th>
+<th style="text-align:center">模式</th>
+<th style="text-align:center">匹配字符串</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">.</td>
+<td style="text-align:center">匹配任意单个字符，除了“\n”</td>
+<td style="text-align:center">a.c</td>
+<td style="text-align:center">abc</td>
+</tr>
+<tr>
+<td style="text-align:center">[ ]</td>
+<td style="text-align:center">匹配指定范围的任意单个字符</td>
+<td style="text-align:center">a[ab]</td>
+<td style="text-align:center">aa或ab</td>
+</tr>
+<tr>
+<td style="text-align:center">[^ ]</td>
+<td style="text-align:center">匹配指定范围之外的任意单个字符</td>
+<td style="text-align:center">a[^ab]</td>
+<td style="text-align:center">ac</td>
+</tr>
+</tbody>
+</table>
+<p>常见的预定义字符集有：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">字符集</th>
+<th style="text-align:center">模式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">大写字母</td>
+<td style="text-align:center">[[:upper:]]</td>
+</tr>
+<tr>
+<td style="text-align:center">小写字母</td>
+<td style="text-align:center">[[:lower:]] \ [a-z]</td>
+</tr>
+<tr>
+<td style="text-align:center">所有字母</td>
+<td style="text-align:center">[[:alpha:]] 或 \w</td>
+</tr>
+<tr>
+<td style="text-align:center">数字</td>
+<td style="text-align:center">[[:digit:]] 或 [0-9] 或 \d</td>
+</tr>
+<tr>
+<td style="text-align:center">数字和字母</td>
+<td style="text-align:center">[[:alnum:]]</td>
+</tr>
+<tr>
+<td style="text-align:center">空格</td>
+<td style="text-align:center">[[:space:]] 或 \</td>
+</tr>
+<tr>
+<td style="text-align:center">标点符号和特殊符号</td>
+<td style="text-align:center">[[:punct:]]</td>
+</tr>
+<tr>
+<td style="text-align:center">非数字</td>
+<td style="text-align:center">[^[:digit:]] 或 \D</td>
+</tr>
+<tr>
+<td style="text-align:center">非空白字符</td>
+<td style="text-align:center">[^\s] 或 \S</td>
+</tr>
+<tr>
+<td style="text-align:center">非单词字符</td>
+<td style="text-align:center">\W 或 [^\w]</td>
+</tr>
+</tbody>
+</table>
+<p>字符匹配时，如果字符串中有特殊字符需要匹配，则需要使用转义字符<code>\</code>或字符集[特殊字符]，使其成为原本的含义。</p>
+<p>以上基本正则表达式和扩展正则表达式均适用。</p>
+<h2 id="次数匹配"><a href="#次数匹配" class="headerlink" title="次数匹配"></a>次数匹配</h2><p>次数匹配用来指定匹配其前面字符的次数</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">元字符</th>
+<th style="text-align:center">功能描述</th>
+<th style="text-align:center">模式</th>
+<th style="text-align:center">匹配字符串</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">*</td>
+<td style="text-align:center">任意次</td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+</tr>
+<tr>
+<td style="text-align:center">.*</td>
+<td style="text-align:center">匹配任意长度的任意字符</td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+</tr>
+<tr>
+<td style="text-align:center">\?</td>
+<td style="text-align:center">匹配其前面的字符0次或1次</td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+</tr>
+<tr>
+<td style="text-align:center">\{m\}</td>
+<td style="text-align:center">匹配其前面的字符m次</td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+</tr>
+<tr>
+<td style="text-align:center">\{m,n\}</td>
+<td style="text-align:center">匹配其前面的字符至少m次，最多n次</td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+</tr>
+<tr>
+<td style="text-align:center">\{m,\}</td>
+<td style="text-align:center">匹配其前面的字符至少m次</td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+</tr>
+<tr>
+<td style="text-align:center">\{0,n\}</td>
+<td style="text-align:center">匹配其前面的字符最多n次</td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+</tr>
+<tr>
+<td style="text-align:center">\+</td>
+<td style="text-align:center">匹配其前面的字符1次或无限次</td>
+<td style="text-align:center">abc+</td>
+<td style="text-align:center">abcccccc</td>
+</tr>
+</tbody>
+</table>
+<p>正则表达式默认为贪婪模式，即尽可能长的去匹配字符。</p>
+<p>扩展正则表达式中不需要转义符号<code>\</code>，另外还有<code>+</code>表示匹配其前面的字符至少一次。</p>
+<h2 id="位置锚定"><a href="#位置锚定" class="headerlink" title="位置锚定"></a>位置锚定</h2><p>位置锚定用于指定字符出现的位置</p>
+<p>行首行尾锚定</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">元字符</th>
+<th style="text-align:center">功能描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">^</td>
+<td style="text-align:center">锚定行首</td>
+</tr>
+<tr>
+<td style="text-align:center">$</td>
+<td style="text-align:center">锚定行尾</td>
+</tr>
+<tr>
+<td style="text-align:center">^$</td>
+<td style="text-align:center">空白行</td>
+</tr>
+</tbody>
+</table>
+<p>单词位置锚定</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">元字符</th>
+<th style="text-align:center">功能描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">锚定词首</td>
+<td style="text-align:center">\&lt;char 或 \bchar</td>
+</tr>
+<tr>
+<td style="text-align:center">锚定词尾</td>
+<td style="text-align:center">char\&gt; ho char\b</td>
+</tr>
+</tbody>
+</table>
+<p>基本和扩展正则表达式都支持位置锚定。</p>
+<h2 id="分组和引用"><a href="#分组和引用" class="headerlink" title="分组和引用"></a>分组和引用</h2><p>使用分组可以将匹配到的文本作为一个整体对待，分组使用<code>\(模式\)</code>。</p>
+<p>引用是对分组的字符串基于位置进行引用。如<code>\1</code>，后向引用， 引用前面的第一个左括号以及与之匹配的右括号中模式所匹配到的内容，类似的还有<code>\2</code>，<code>\3</code>。</p>
+<p>基本和扩展正则表达式都支持分组和引用。</p>
+<p>扩展正则表达式还支持或者操作。使用<code>|</code>表示或者，<code>a|b</code>表示ab有一个即可，<code>ac|bc</code>表示ac或者bc，如果想对一个字母使用或者，要使用<code>ab(x|y)c</code>。</p>
+<h2 id="练习"><a href="#练习" class="headerlink" title="练习"></a>练习</h2><p>用两种方查找/proc/meminfo文件中以大写或小写S开头的行</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">egrep "^(s|S)" /proc/meminfo</span><br><span class="line">grep "^[Ss]" /proc/meminfo</span><br><span class="line">grep -i "^s" /proc/meminfo</span><br></pre></td></tr></table></figure>
+<p>查找/etc/passwd文件中的一位数或两位数；</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">grep "\&lt;[0-9]\&#123;1,2\&#125;\&gt;" /etc/passwd</span><br><span class="line">egrep "\&lt;[0-9]|[0-9][0-9]\&gt;" /etc/passwd</span><br></pre></td></tr></table></figure>
+<p>查找/boot/grub/grub.conf中以至少一个空白字符开头的行；</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">grep "^[[:space:]]\&#123;1\&#125;.*" /boot/grub/grub.conf</span><br><span class="line">grep "^[[:space:]]\+" /boot/grub/grub.conf</span><br></pre></td></tr></table></figure>
+<p>查找/etc/rc.d/rc.sysinit文件中以#开头，后面跟至少一个空白字符，而后又有至少一个非空白字符的行；</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">grep "^#[[:space:]][^[:space:]].$" /etc/rc.d/rc.sysinit</span><br><span class="line">grep "^#[[:space:]]\+[^[:space:]]\+" /etc/rc.d/rc.sysinit</span><br></pre></td></tr></table></figure>
+<p>打出netstat -tan命令执行结果中以‘LISTEN’，后或跟空白字符结尾的行；</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">netstat -tan | grep "LISTEN[[:space:]].*"</span><br></pre></td></tr></table></figure>
+<p>后续还会更新遇到的题目…</p>
+<h2 id="推荐文章"><a href="#推荐文章" class="headerlink" title="推荐文章"></a>推荐文章</h2><p><a href="https://www.cnblogs.com/huxi/archive/2010/07/04/1771073.html" target="_blank" rel="noopener">Python正则表达式指南</a></p>
+<p><a href="https://www.jianshu.com/p/e7bb97218946" target="_blank" rel="noopener">知道这20个正则表达式，能让你少写1,000行代码</a></p>
 
 
                 <hr>
@@ -295,13 +408,9 @@
 
                 <ul class="pager">
                     
-                        <li class="previous">
-                            <a href="/2017/12/28/Regular-Expression/" data-toggle="tooltip" data-placement="top" title="正则表达式在Shell中的使用">&larr; Previous Post</a>
-                        </li>
-                    
                     
                         <li class="next">
-                            <a href="/2017/12/24/Hello-world/" data-toggle="tooltip" data-placement="top" title="Hello World!">Next Post &rarr;</a>
+                            <a href="/2017/12/24/Vim/" data-toggle="tooltip" data-placement="top" title="Vim 备忘录">Next Post &rarr;</a>
                         </li>
                     
                 </ul>
@@ -336,10 +445,6 @@
                        
                           <a class="tag" href="/tags/#基本功" title="基本功">基本功</a>
                         
-                          <a class="tag" href="/tags/#Linux" title="Linux">Linux</a>
-                        
-                          <a class="tag" href="/tags/#Unix" title="Unix">Unix</a>
-                        
                     </div>
                 </section>
                 
@@ -370,8 +475,8 @@
 <script type="text/javascript">
     /* * * CONFIGURATION VARIABLES * * */
     var disqus_shortname = "hexo-theme-huxblog";
-    var disqus_identifier = "https://simontage.github.io/2017/12/24/Vim/";
-    var disqus_url = "https://simontage.github.io/2017/12/24/Vim/";
+    var disqus_identifier = "https://simontage.github.io/2017/12/28/Regular-Expression/";
+    var disqus_url = "https://simontage.github.io/2017/12/28/Regular-Expression/";
 
     (function() {
         var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
