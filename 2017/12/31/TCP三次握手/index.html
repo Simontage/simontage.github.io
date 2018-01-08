@@ -13,11 +13,11 @@
 
     <title>
         
-          Manson的备忘录 | Manson&#39;s Notes
+          TCP备忘录 - Manson的备忘录 | Manson&#39;s Notes
         
     </title>
 
-    <link rel="canonical" href="https://simontage.github.io/tags/基本功/">
+    <link rel="canonical" href="https://simontage.github.io/2017/12/31/TCP三次握手/">
 
     <!-- Bootstrap Core CSS -->
     <link rel="stylesheet" href="/css/bootstrap.min.css">
@@ -147,7 +147,193 @@
 
 
     <!-- Main Content -->
-    <!-- Default Archive layout, we use archives instead. -->
+    
+<!-- Image to hack wechat -->
+<!-- <img src="https://simontage.github.io/img/icon_wechat.png" width="0" height="0"> -->
+<!-- <img src="{{ site.baseurl }}/{% if page.header-img %}{{ page.header-img }}{% else %}{{ site.header-img }}{% endif %}" width="0" height="0"> -->
+
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        background-image: url('/img/home-bg.jpg')
+    }
+</style>
+<header class="intro-header" >
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                    </div>
+                    <h1>TCP备忘录</h1>
+                    <h2 class="subheading"></h2>
+                    <span class="meta">
+                        Posted by Manson on
+                        2017-12-31
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+    <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+                <blockquote>
+<p>“How are you？”</p>
+<p>“Fine thank you,And you ? ”</p>
+<p>“I’m fine too.”</p>
+</blockquote>
+<p>[尚未完成]</p>
+<p>TCP协议(<a href="https://tools.ietf.org/html/rfc793" target="_blank" rel="noopener">RFC793</a>)属于传输层协议，实现了在不可靠的IP网络上可靠传输数据或故障的可靠通知。</p>
+<h2 id="作用和位置"><a href="#作用和位置" class="headerlink" title="作用和位置"></a>作用和位置</h2><p>数据链路层将同一网络的节点连接起来，网络层将不同的网络连接起来，传输层使用端口将发往不同应用的数据包区分开来。以一个小区为例，网络层只能表示的小区的正门，传输层则可以找到一个具体的住户。</p>
+<p>TCP是面向连接的，可靠的传输层协议，所谓面向连接指的是在两个节点在通信前，要先建立一条通信线路，线路建立成功才能进行通信，所以TCP不能用于组播和广播。</p>
+<h2 id="数据包"><a href="#数据包" class="headerlink" title="数据包"></a>数据包</h2><p>一个以太网数据帧是1522字节(Byte)，其中22字节的头部信息，1500是负载，实际上IP包的MTU默认就是1500，超过1500，数据报文会被分片。</p>
+<p>IP包的头部需要至少20字节，那么负载就是1480字节。TCP包头需要至少20字节，则TCP的有效负载为1460字节。</p>
+<p><img src="http://om8bgr2y6.bkt.clouddn.com/Ethernet%20frame.png" alt="Ethernet frame"></p>
+<p>当一个TCP的有效负载超过了1460，将会被分为多个数据报文传送。数据包被拆分为多个会被编号，系统内核收到后会按编号将多个数据包组装还原，然后发给相应应用程序监听的端口。</p>
+<p>数据包被拆分后的第一个包编号（SEQ）是一个随机数，后续的包编号为上一个包编号+上一个包负载长度。</p>
+<p>当得到了一个编号的TCP包，可以得到当前的编号，和下一个包的编号，计算可得本次的负载长度。一般情况下没收到两个包，就要返回一个确认包（ACK）。</p>
+<h2 id="连接建立和断开"><a href="#连接建立和断开" class="headerlink" title="连接建立和断开"></a>连接建立和断开</h2><p>TCP建立连接需要“三次握手”，断开连接需要“四次挥手”。</p>
+<p><strong>TCP建立连接</strong></p>
+<p><strong>TCP断开连接</strong></p>
+<h2 id="可靠性保障"><a href="#可靠性保障" class="headerlink" title="可靠性保障"></a>可靠性保障</h2><h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><p><a href="http://www.ruanyifeng.com/blog/2017/06/tcp-protocol.html" target="_blank" rel="noopener">TCP 协议简介</a></p>
+<p><a href="https://zhuanlan.zhihu.com/p/21421623" target="_blank" rel="noopener">聊聊TCP协议</a></p>
+<p><a href="https://www.zhihu.com/question/28943943/answer/155660761" target="_blank" rel="noopener">如何学习TCP/IP协议</a></p>
+<p><a href="https://hit-alibaba.github.io/interview/basic/network/TCP.html" target="_blank" rel="noopener">TCP的特性</a></p>
+<p><a href="https://www.cnblogs.com/cy568searchx/p/3711670.html" target="_blank" rel="noopener">TCP通信的三次握手和四次撒手的详细流程（顿悟）</a></p>
+
+
+                <hr>
+
+                
+
+                <ul class="pager">
+                    
+                    
+                        <li class="next">
+                            <a href="/2017/12/28/Regular-Expression/" data-toggle="tooltip" data-placement="top" title="正则表达式在Shell中的使用">Next Post &rarr;</a>
+                        </li>
+                    
+                </ul>
+
+                
+
+                
+                <!-- disqus 评论框 start -->
+                <div class="comment">
+                    <div id="disqus_thread" class="disqus-thread"></div>
+                </div>
+                <!-- disqus 评论框 end -->
+                
+
+            </div>
+    <!-- Side Catalog Container -->
+        
+
+    <!-- Sidebar Container -->
+
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <!-- no hr -->
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                       
+                    </div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>FRIENDS</h5>
+                <ul class="list-inline">
+
+                    
+                        <li><a href="#" target="_blank">留着</a></li>
+                    
+                        <li><a href="#" target="_blank">也留着</a></li>
+                    
+                </ul>
+                
+            </div>
+
+        </div>
+    </div>
+</article>
+
+
+
+
+<!-- disqus 公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = "hexo-theme-huxblog";
+    var disqus_identifier = "https://simontage.github.io/2017/12/31/TCP三次握手/";
+    var disqus_url = "https://simontage.github.io/2017/12/31/TCP三次握手/";
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<!-- disqus 公共JS代码 end -->
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("https://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'always',
+          placement: 'right',
+          icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
 
     <!-- Footer -->
     <!-- Footer -->
