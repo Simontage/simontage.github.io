@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="keyword"  content="">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>
+        
+          网络安全通信-OpenSSL - Manson的备忘录 | Manson&#39;s Notes
+        
+    </title>
+
+    <link rel="canonical" href="https://simontage.github.io/2018/01/19/安全通信-OpenSSL/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/hux-blog.min.css">
+
+    <!-- Pygments Highlight CSS -->
+    <link rel="stylesheet" href="/css/highlight.css">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="https://cdn.staticfile.org/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- Hux Delete, sad but pending in China
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
+    css'>
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+</head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Manson&#39;s Notes</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'s height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+
+                    
+
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/archives/">Archives</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/about/">About</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/tags/">Tags</a>
+                        </li>
+                        
+                    
+                    
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Main Content -->
+    
+<!-- Image to hack wechat -->
+<!-- <img src="https://simontage.github.io/img/icon_wechat.png" width="0" height="0"> -->
+<!-- <img src="{{ site.baseurl }}/{% if page.header-img %}{{ page.header-img }}{% else %}{{ site.header-img }}{% endif %}" width="0" height="0"> -->
+
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        background-image: url('/img/home-bg.jpg')
+    }
+</style>
+<header class="intro-header" >
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                    </div>
+                    <h1>网络安全通信-OpenSSL</h1>
+                    <h2 class="subheading"></h2>
+                    <span class="meta">
+                        Posted by Manson on
+                        2018-01-19
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+    <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+                <p>网络安全包含网络信息的可用性、保密性、完整性和网络通信对象的真实性（可查性）。</p>
+<p>网络信息的保密性指的是保证数据的私密性，完整性表示保证数据的完整性，可用性表示验证来源的合法性。</p>
+<h2 id="解决数据的保密性-对称加密和非对称加密"><a href="#解决数据的保密性-对称加密和非对称加密" class="headerlink" title="解决数据的保密性-对称加密和非对称加密"></a>解决数据的保密性-对称加密和非对称加密</h2><p>要保证数据的私密性，必然要对要传输的数据进行加密和解密。</p>
+<p><img src="http://om8bgr2y6.bkt.clouddn.com/encryption_decryption.png" alt=""></p>
+<p>数据加密（encryption）指的是使用一个密钥（key）并通过一种加密算法将明文（plaintext）加密成为密文（ciphertext）。数据解密（decryption）是数据加密的逆向过程，通过密钥将密文解密成明文。</p>
+<p>加密和解密使用的密钥可以是相同的，也可以是不同的。使用相同的密钥，是对称加密；使用不同的密钥是非对称加密。</p>
+<p><img src="http://om8bgr2y6.bkt.clouddn.com/%E5%AF%B9%E7%A7%B0%E5%8A%A0%E5%AF%86%E5%92%8C%E9%9D%9E%E5%AF%B9%E7%A7%B0%E5%8A%A0%E5%AF%86%E6%AF%94%E8%BE%832.png" alt=""></p>
+<p>目前常见的对称加密算法有：DES、3DES、AES等。这些对称加密算法都属于分组密码，分组密码（block cipher）是每次只能处理特定长度的一块（block）数据的一类加密算法，加密是逐块进行的。</p>
+<p><img src="http://om8bgr2y6.bkt.clouddn.com/%E5%AF%B9%E7%A7%B0%E5%8A%A0%E5%AF%86.png" alt="对称加密使用相同的密钥"></p>
+<p>DES(Data Encryption Standard)和3DES(triple-DES)现在已不推荐使用，AES( Advanced Encryption Standard)是当前流行使用的对称加密算法，目前该算法还是安全的，AES算法生成的密钥长度可变，有128/192/256/384/512 bits可选。</p>
+<p>非对称加密中，密钥成对出现，一个公钥(public key)和一个私钥（private key），公钥可以公开，而私钥自己保存，并要保证其私密性，如对其进行对称加密或设置权限。</p>
+<p><img src="http://om8bgr2y6.bkt.clouddn.com/%E9%9D%9E%E5%AF%B9%E7%A7%B0%E5%8A%A0%E5%AF%86.png" alt=""></p>
+<p>目前常见的非对称加密算法有：RSA(数字签名和加密)、Elgamal(商业算法)、D-H、DSA(数字签名)等。</p>
+<p>当完全使用非对称加密，通信的效率将比对称加密低得多，为了在保证安全的前提下提高效率，可以在一次通信中同时使用对称加密和非对称加密。对称加密对明文加密，非对称加密对对称加密的密钥加密。</p>
+<p><img src="http://om8bgr2y6.bkt.clouddn.com/%E6%B7%B7%E5%90%88%E5%8A%A0%E5%AF%86.png" alt=""></p>
+<p>组合使用对称加密和非对称加密的过程：</p>
+<ol>
+<li>发送方生成一个对称密钥，并对明文加密</li>
+<li>发送方使用接收方的公钥对这个对称密钥进行加密</li>
+<li>发送方将加密的明文和加密的密钥发送给接收方</li>
+<li>接收方用自己的私钥将对称加密的密钥解密</li>
+<li>接收方用对称密钥解密</li>
+</ol>
+<h2 id="解决数据的完整性-散列函数"><a href="#解决数据的完整性-散列函数" class="headerlink" title="解决数据的完整性-散列函数"></a>解决数据的完整性-散列函数</h2><p>单向加密也加散列函数或Hash函数，主要特点是定长输出和雪崩效应。</p>
+<p>散列函数的特性：</p>
+<ul>
+<li>定长输出：任意长度的输入，输出都是定长的十六进制数字串，相同的明文提取的指纹是相同的。</li>
+<li>加密不可逆：只能加密不能解密，也叫提取指纹</li>
+<li>雪崩效应：内容发生一点改变，输出指纹将完全改变</li>
+</ul>
+<p>常见的单向加密算法有：md5(Message-Digest Algorithm 5)和sha-1、sha256、sha384、sha512等。</p>
+<p>md5生成的摘要是128bits，按4位二进制组合成一个16进制数，结果是由32个十六进制数组成的数字串；sha1生成的摘要是160bits，sha256输出的256bits…</p>
+<p>延伸：消息验证码（Message Authentication Code）</p>
+<p>MAC消息验证码是单项加密的延伸应用，用于实现在网络通信中保证所传输的数据的完整性。有两个实现机制：HMAC 和 CBC-MAC。HMAC使用的算法是 md5或 sha1算法。</p>
+<h2 id="解决数据的可用性（来源合法性）"><a href="#解决数据的可用性（来源合法性）" class="headerlink" title="解决数据的可用性（来源合法性）"></a>解决数据的可用性（来源合法性）</h2><p>解决数据的可用性，也是验证数据来源的合法性。</p>
+<p><img src="http://om8bgr2y6.bkt.clouddn.com/maninMiddle.png" alt=""></p>
+<p>在使用混合加密通信过程中，A为发送方，B为接收方，当A和B在传输彼此公钥时，被中间人X截取并替换为自己的公钥发送给A和B，此时通信内容被中间X读取，也可篡改后发送给B。</p>
+<p>只要能安全的传输公钥，就能避免中间人攻击。要保证公钥不被替换，就需要一个可信的认证机构对公钥进行公证。</p>
+<p>在网络安全通信中，CA是有公信力的认证中心。申请者将自己的公钥和个人信息发送给CA，请求其做认证。CA进行验证后，将申请人的信息和公钥使用Hash算法提取消息摘要，然后CA使用自己的私钥对消息摘要进行加密形成<strong>数字签名</strong>。CA将申请者的个人信息和申请者的公钥加上数字签名形成了数字证书，并发送给申请者。</p>
+<p><img src="http://om8bgr2y6.bkt.clouddn.com/%E6%95%B0%E5%AD%97%E8%AF%81%E4%B9%A6.png" alt=""></p>
+<p>发送方发送信息时同时也发送自己的数字证书，当接收方收到信息和数字证书时，接收方使用Hash算法对证书中的个人信息和公钥进行提取指纹，然后使用CA的公钥对数字签名进行解密，对比自己生成的消息摘要和解密出来的数字签名是否一致，如果一致，则发送方的公钥可用。</p>
+<p><img src="http://om8bgr2y6.bkt.clouddn.com/%E8%AF%81%E4%B9%A6%E9%AA%8C%E8%AF%81.png" alt=""></p>
+<p>CA本身也有证书来证明自己的身份，并且CA是一种树形结构，高级别的CA会给低级别的CA做信用背书，操作系统和浏览器已经内置了顶层的CA证书。</p>
+<p>CA参与的安全通信过程：</p>
+<ol>
+<li>首先保证CA为通信双方都认可的机构</li>
+<li>通信双方向CA申请数字证书，包含了各自的公钥</li>
+<li>CA对通信双方进行合法性验证，通过则使用CA的私钥对申请文件进行加密（数字签名），并将数字签名和个人信息整理为一个数字证书</li>
+<li>通信双方下载各自由CA签发的数字证书</li>
+<li>当发送方要发送信息时，首先向接收方请求其数字证书</li>
+<li>接收方利用CA的公钥检查接收到的数字证书是否合法，并得到接收方的公钥</li>
+<li>发送方利用散列函数对明文数据提取指纹，然后通过程序随机生成一个session key，利用这个session key对明文数据进行对称加密，最后发送方用接收方的公钥对session key进行非对称加密</li>
+<li>发送方将自己的证书和加密后的文件（包含session key）发送给接收方</li>
+<li>接收方用CA的公钥验证发送方数字证书的合法性，包括用CA的公钥解密数字证书、用相同的签名算法ID提取指纹并与签名比对、数字证书的有效期、证书的主体名和被访问的主机名或人名是否相同以及证书是否在吊销列表中。<br>如果合法，则利用自己的私钥对session key进行解密得到明文数据，然后利用散列函数对明文数据提取指纹，将自己得到的指纹与发送方发来的指纹进行对比，如果一致，则没有被篡改，安全通信完成。</li>
+</ol>
+<h2 id="PKI"><a href="#PKI" class="headerlink" title="PKI"></a>PKI</h2><p>Public Key Infrastructure（PKI)，中文叫做公开密钥基础设施，是利用公钥加密建立的一套安全平台技术规范体系。PKI主要应用于虚拟专用网络（VPN），安全电子邮件和Web安全。</p>
+<p>PKI有四个组件：</p>
+<ul>
+<li>签证机构，CA：生成数字证书</li>
+<li>注册机构，RA：接收证书请求，验证请求者身份，相当于CA的前段代理</li>
+<li>证书吊销列表，CRL：保存证书颁发机构CA已经吊销的证书序列号和吊销日期</li>
+<li>PKI存取库：对用户申请、证书、密钥、CRL和日志信息进行存储和管理</li>
+</ul>
+<p>X.509定义了证书的结构以及认证协议标准，目前使用的是第三版。下图是X.509 Version3的格式</p>
+<p><img src="http://om8bgr2y6.bkt.clouddn.com/x509v3.png" alt=""></p>
+<h2 id="SSL协议"><a href="#SSL协议" class="headerlink" title="SSL协议"></a>SSL协议</h2><p>SSL（安全套接层，Secure Sockets Layer）是网景公司在1994年设计，1995年发布的。设计SSL的目的是为了对http报文进行加密。在1999年，IETF将SSL标准化并改名为TLS（传输层安全协议，Transport Layer Security）。SSL/TLS相当于在应用层和传输层间增加了半层关于安全通信的层。</p>
+<p><img src="http://om8bgr2y6.bkt.clouddn.com/tls-timeline.png" alt=""></p>
+<p><img src="http://om8bgr2y6.bkt.clouddn.com/TLS-added.png" alt=""></p>
+<p>SSL协议分为两部分：Handshake protocol和Record Protocol。Handshake Protocol用来在通信双方协商出一个安全的会话密钥以供后续对称加密中使用。Record Protocol则定义了传输的封装格式。</p>
+<p>SSL/TLS协议通信的大概过程：</p>
+<ol>
+<li>客户端向服务端索要公钥（证书）并验证</li>
+<li>双方协商生成“会话密钥”</li>
+<li>后续使用“会话密钥”加密通信</li>
+</ol>
+<p><img src="http://om8bgr2y6.bkt.clouddn.com/tls-ssl-handshake.png" alt=""></p>
+<p>首先，客户端发出请求（ClientHello），将本地支持的加密套件（Cipher Suit）的列表，也就是本地支持的加密算法、支持的TLS版本、支持的压缩方法发送到服务端。另外产生一个随机数发送到服务端，同时保存在本地一个副本，稍后用于生成会话密钥。</p>
+<p>然后，服务端回应（ServerHello），将服务端的数字证书发送给客户端，并确认使用的加密通信协议版本、服务器生成的随机数、确认使用的加密算法。</p>
+<p>其次，客户端收到服务端证书并验证真实性后，得到服务器的可信公钥，然后再发送一个新的随机数、编码改变通知（随后的信息都将用双方商定的加密方法和密钥发送）、客户端握手结束通知。</p>
+<p>最后，服务端收到第三个随机数后，计算生成本次会话使用的会话密钥，然后发送编码改变通知和服务器握手结束通知。</p>
+<p>随后的通信使用的http协议，然后使用会话密钥加密。</p>
+<h2 id="安全通信在Linux中的实现"><a href="#安全通信在Linux中的实现" class="headerlink" title="安全通信在Linux中的实现"></a>安全通信在Linux中的实现</h2><p>在Linux系统中，常用的安全通信工具是OpenSSL和gpg。OpenSSL是一个开源项目，由三个组件组成：</p>
+<ul>
+<li>openssl：OpenSSL命令行工具</li>
+<li>libcrypto：加密解密库</li>
+<li>libssl：用于实现ssl通信安全机制的库</li>
+</ul>
+<p>获取 openssl 的帮助使用 <code>openssl ？</code></p>
+<p><strong>对称加密的实现</strong></p>
+<p>工具：openssl、gpg</p>
+<p>OpenSSL支持的算法：分组加密AES、DES、Blowfish、CAST、IDEA、RC2、RC5、流加密算法RC4</p>
+<p>加密：<code>openssl enc -e 加密算法 -a -salt -in 加密前的文件 -out 加密后的文件名</code></p>
+<figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ openssl enc -e -des3 -<span class="selector-tag">a</span> -salt -<span class="keyword">in</span> Plain_text -out Plain_text.ciphertext</span><br><span class="line">enter des-ede3-cbc encryption password:</span><br><span class="line">Verifying - enter des-ede3-cbc encryption password:</span><br><span class="line">$ cat Plain_text<span class="selector-class">.ciphertext</span> </span><br><span class="line">U2FsdGVkX1/Dy6fB89ilQqoOcT+rkW<span class="comment">//092jMH2hA9c=</span></span><br></pre></td></tr></table></figure>
+<p>解密： <code>openssl enc -d 加密算法 -a -salt -out  解密后的文件  -in 加密的文件</code></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> openssl enc -d -des3 -a -salt -out Plain_text_new -<span class="keyword">in</span> Plain_text.ciphertext</span></span><br><span class="line">enter des-ede3-cbc decryption password:</span><br><span class="line"><span class="meta">$</span><span class="bash"> cat Plain_text_new </span></span><br><span class="line">Plain Text</span><br></pre></td></tr></table></figure>
+<p><strong>提取特征码的实现</strong></p>
+<p>工具：md5sum、sha1sum、sha224sum、sha256sum、openssl dgst等</p>
+<p>OpenSSL支持的算法：MD2、MD5、MDC2、SHA（SHA1）和RIPEMD</p>
+<p>提取特征码：<code>openssl dgst -md5  /PATH/TO/File [-out OUTFILE]</code></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> whatis dgst</span></span><br><span class="line">dgst (1ssl)          - message digests</span><br><span class="line"><span class="meta">$</span><span class="bash"> man dgst</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> openssl dgst -md5 Plain_text</span></span><br><span class="line">MD5(Plain_text)= 7a81394b983c5a7cd9c1499ff4205edf</span><br><span class="line"><span class="meta">$</span><span class="bash"> openssl dgst -md5 Plain_text_new </span></span><br><span class="line">MD5(Plain_text_new)= 7a81394b983c5a7cd9c1499ff4205edf</span><br><span class="line"><span class="meta">$</span><span class="bash"> md5sum Plain_text</span></span><br><span class="line">7a81394b983c5a7cd9c1499ff4205edf</span><br></pre></td></tr></table></figure>
+<p><strong>非对称加密的实现</strong></p>
+<p>工具：OpenSSL、gpg</p>
+<p>OpenSSL支持的算法：DH算法、RSA算法、DSA算法和椭圆曲线算法（EC）</p>
+<ul>
+<li>DH算法：一般用于用户密钥交换</li>
+<li>RSA算法：既可以用于密钥交换，也可以用于数字签名，不建议数据加密，因为效率低下</li>
+<li>DSA算法（Digital Signature Algorithm）：一般只用于数字签名</li>
+</ul>
+<p>生成密钥：<code>openssl genrsa -out /PATH/TO/PRIVATEKEY Num_Bits</code>，生成文件后要修改文件权限为600</p>
+<figure class="highlight clean"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ whatis genrsa</span><br><span class="line">genrsa (<span class="number">1</span>ssl)        - generate an RSA private key</span><br><span class="line">$ (umask <span class="number">077</span>;openssl genrsa -out private_key <span class="number">2048</span>) #在子SHELL中运行命令，umask对当前的SHELL不影响</span><br><span class="line">Generating RSA private key, <span class="number">2048</span> bit long modulus</span><br><span class="line">...............+++</span><br><span class="line">.................+++</span><br><span class="line">e is <span class="number">65537</span> (<span class="number">0x10001</span>)</span><br></pre></td></tr></table></figure>
+<p>提取公钥：<code>openssl rsa -in /PATH/TO/PRIVATE_KEY -pubout</code> </p>
+<figure class="highlight vbnet"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">$ openssl rsa -<span class="keyword">in</span> private_key -pubout</span><br><span class="line">writing RSA <span class="keyword">key</span></span><br><span class="line">-----BEGIN <span class="keyword">PUBLIC</span> <span class="keyword">KEY</span>-----</span><br><span class="line">MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwdoeXJbht21MHcLeEuvi</span><br><span class="line">IAqq5ii3HVayUsErYiYLhnl8tbtxQ6R4up3mRbQdFnDlV+NRXgYq9dNQHstku5qm</span><br><span class="line"><span class="keyword">tO</span>+<span class="number">5</span>BQpzay8a3iZDp5rQjm/wfij4fKUTJdeHaJ/aVHS+tyvC1bW7TH3vQjrKoa0W</span><br><span class="line">sHIiGo0a/O/iq9vt/<span class="number">5</span>vkxuD/Cb0fxNmoQD2f05joyAspD0gM233co+LCka0ySpqp</span><br><span class="line">mNUwoLg9CnzlIGtLVfAQpV5wZ3rMFeLZK4q6SrHdz3WHTWnWGJIvsbjIcZsxrXTc</span><br><span class="line"><span class="number">9</span>xoVj0McprqE7kWCzar0tzL2pvP5/etvCU2OWQHoHlp88hKSbaaUfi3Rx5EIZfFM</span><br><span class="line"><span class="number">0</span>QIDAQAB</span><br><span class="line">-----<span class="keyword">END</span> <span class="keyword">PUBLIC</span> <span class="keyword">KEY</span>-----</span><br></pre></td></tr></table></figure>
+<p><strong>加密字符串和随机数的实现</strong></p>
+<p>加密字符串：<code>openssl passwd -1 -salt SALT</code></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> whatis passwd</span></span><br><span class="line">sslpassw(1ssl)     - compute password hashes</span><br><span class="line">passwd (1)           - update user's authentication tokens</span><br><span class="line">passwd (5)           - password file</span><br><span class="line"><span class="meta">$</span><span class="bash"> man sslpasswd</span></span><br><span class="line">-1:使用md5算法</span><br><span class="line">-salt：添加指定的杂质字符串，一般为8个字符串即可</span><br><span class="line"><span class="meta">$</span><span class="bash"> openssl passwd -1 -salt 12345678</span></span><br><span class="line">Password:*vagrant*</span><br><span class="line"><span class="meta">$</span><span class="bash">1<span class="variable">$12345678</span><span class="variable">$37gcmX4YPF4w6O5QWViJm</span>. <span class="comment"># $1$12345678$表示使用的加密算法和杂质</span></span></span><br></pre></td></tr></table></figure>
+<p>生成随机数：<code>openssl rand -base64|-hex NUM</code> </p>
+<p>NUM表示字节数，-hex时，每个字符4位，出现的字符数位NUM的两倍</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">$ whatis <span class="keyword">rand</span></span><br><span class="line"><span class="keyword">rand</span> (<span class="number">3</span>)             - pseudo-random number generator</span><br><span class="line">sslrand (<span class="number">1</span>ssl)       - <span class="keyword">generate</span> pseudo-random bytes</span><br><span class="line"><span class="keyword">rand</span> (<span class="number">3</span>p)            - pseudo-random number generator</span><br><span class="line">$ man sslrand</span><br><span class="line">-base64:以base64编码输出。Base64是一种用<span class="number">64</span>个字符来表示任意二进制数据的方法</span><br><span class="line">-hex:以十六进制字符串输出</span><br><span class="line">$ openssl <span class="keyword">rand</span> -hex <span class="number">2</span></span><br><span class="line"><span class="number">495</span>e</span><br><span class="line">$ openssl <span class="keyword">rand</span> -base64 <span class="number">2</span></span><br><span class="line">E3I=</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>加密依赖的随机数</p>
+<p>Linux系统上的随机数生成器有两个：</p>
+<ul>
+<li>/dev/random：仅从熵池返回随机数，随机数用尽后程序阻塞（whatis random）</li>
+<li>/dev/urandom：从熵池返回随机数，随机数用尽后，会利用软件生成伪随机数，程序不会阻塞（whatis urandom）</li>
+</ul>
+<p>熵池中随机数的来源有硬盘IO中断时间间隔和键盘IO中断时间间隔，并且熵池的随机数只能被使用一次。伪随机数是由程序生成的，不安全。</p>
+</blockquote>
+<h2 id="使用OpenSSL构建私有PKI体系框架"><a href="#使用OpenSSL构建私有PKI体系框架" class="headerlink" title="使用OpenSSL构建私有PKI体系框架"></a>使用OpenSSL构建私有PKI体系框架</h2><p>openssl在建立私有CA时，使用的配置文件是<code>/etc/pki/tls/openssl.cnf</code>中<code>ca</code> 和<code>[ CA default ]</code>定义的内容</p>
+<figure class="highlight clean"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line">$ vim /etc/pki/tls/openssl.cnf</span><br><span class="line">...</span><br><span class="line">[ ca ]</span><br><span class="line">default_ca      = CA_default            # The default ca section</span><br><span class="line">####################################################################</span><br><span class="line">[ CA_default ]</span><br><span class="line">dir             = /etc/pki/CA           # Where everything is kept</span><br><span class="line">certs           = $dir/certs            # Where the issued certs are kept</span><br><span class="line">crl_dir         = $dir/crl              # Where the issued crl are kept</span><br><span class="line">database        = $dir/index.txt        # database index file.</span><br><span class="line">#unique_subject = no                    # Set to <span class="string">'no'</span> to allow creation <span class="keyword">of</span></span><br><span class="line">                                        # several ctificates <span class="keyword">with</span> same subject.</span><br><span class="line">new_certs_dir   = $dir/newcerts         # default place for new certs.</span><br><span class="line"></span><br><span class="line">certificate     = $dir/cacert.pem       # The CA certificate</span><br><span class="line">serial          = $dir/serial           # The current serial number</span><br><span class="line">crlnumber       = $dir/crlnumber        # the current crl number</span><br><span class="line">                                        # must be commented out to leave a V1 CRL</span><br><span class="line">crl             = $dir/crl.pem          # The current CRL</span><br><span class="line">private_key     = $dir/private/cakey.pem# The private key</span><br><span class="line">RANDFILE        = $dir/private/.rand    # private random number file</span><br><span class="line"></span><br><span class="line">x509_extensions = usr_cert              # The extentions to add to the cert</span><br><span class="line"></span><br><span class="line"># Comment out the following two lines for the <span class="string">"traditional"</span></span><br><span class="line"># (and highly broken) format.</span><br><span class="line">name_opt        = ca_default            # Subject Name options</span><br><span class="line">cert_opt        = ca_default            # Certificate field options</span><br><span class="line"></span><br><span class="line"># Extension copying option: use <span class="keyword">with</span> caution.</span><br><span class="line"># copy_extensions = copy</span><br><span class="line"></span><br><span class="line"># Extensions to add to a CRL. Note: Netscape communicator chokes on V2 CRLs</span><br><span class="line"># so this is commented out by default to leave a V1 CRL.</span><br><span class="line"># crlnumber must also be commented out to leave a V1 CRL.</span><br><span class="line"># crl_extensions        = crl_ext</span><br><span class="line"></span><br><span class="line">default_days    = <span class="number">365</span>                   # how long to certify for</span><br><span class="line">default_crl_days= <span class="number">30</span>                    # how long before next CRL</span><br><span class="line">default_md      = sha256                # use SHA<span class="number">-256</span> by default</span><br><span class="line">preserve        = no                    # keep passed DN ordering</span><br><span class="line"></span><br><span class="line"># A few difference way <span class="keyword">of</span> specifying how similar the request should look</span><br><span class="line"># For type CA, the listed attributes must be the same, and the optional</span><br><span class="line"># and supplied fields are just that :-)</span><br><span class="line">policy          = policy_match</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<p>一、CA生成非对称加密密钥对，并自签署证书</p>
+<p>在/etc/pki/CA/private目录下建立私钥</p>
+<figure class="highlight clean"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ su -l</span><br><span class="line"># cd /etc/pki/CA</span><br><span class="line"># (umask <span class="number">077</span>;openssl genrsa -out private/cakey.pem <span class="number">2048</span>)</span><br><span class="line">Generating RSA private key, <span class="number">2048</span> bit long modulus</span><br><span class="line">.....................................................................+++</span><br><span class="line">..........+++</span><br><span class="line">e is <span class="number">65537</span> (<span class="number">0x10001</span>)</span><br></pre></td></tr></table></figure>
+<p>生成自签证书，也就是自己向自己申请证书签署请求</p>
+<figure class="highlight less"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"># <span class="selector-tag">openssl</span> <span class="selector-tag">req</span> <span class="selector-tag">-new</span> <span class="selector-tag">-x509</span> <span class="selector-tag">-key</span> <span class="selector-tag">private</span>/<span class="selector-tag">cakey</span><span class="selector-class">.pem</span> <span class="selector-tag">-out</span> <span class="selector-tag">cacert</span><span class="selector-class">.pem</span></span><br><span class="line"><span class="selector-tag">Country</span> <span class="selector-tag">Name</span> (<span class="number">2</span> letter code) <span class="selector-attr">[XX]</span><span class="selector-pseudo">:CN</span></span><br><span class="line"><span class="selector-tag">State</span> <span class="selector-tag">or</span> <span class="selector-tag">Province</span> <span class="selector-tag">Name</span> (full name) <span class="selector-attr">[]</span><span class="selector-pseudo">:Jiangsu</span></span><br><span class="line"><span class="selector-tag">Locality</span> <span class="selector-tag">Name</span> (eg, city) <span class="selector-attr">[Default City]</span><span class="selector-pseudo">:Nanjing</span></span><br><span class="line"><span class="selector-tag">Organization</span> <span class="selector-tag">Name</span> (eg, company) <span class="selector-attr">[Default Company Ltd]</span><span class="selector-pseudo">:III</span></span><br><span class="line"><span class="selector-tag">Organizational</span> <span class="selector-tag">Unit</span> <span class="selector-tag">Name</span> (eg, section) <span class="selector-attr">[]</span><span class="selector-pseudo">:CA</span></span><br><span class="line"><span class="selector-tag">Common</span> <span class="selector-tag">Name</span> (eg, your name or your server's hostname) <span class="selector-attr">[]</span><span class="selector-pseudo">:ca.yellowdog.com</span></span><br><span class="line"><span class="selector-tag">Email</span> <span class="selector-tag">Address</span> <span class="selector-attr">[]</span><span class="selector-pseudo">:caadmin</span>@<span class="selector-tag">yellowdog</span><span class="selector-class">.com</span></span><br><span class="line"><span class="selector-attr">[root@sysadmin CA]</span># <span class="selector-tag">tree</span></span><br><span class="line">.</span><br><span class="line">├── <span class="selector-tag">cacert</span><span class="selector-class">.pem</span></span><br><span class="line">├── <span class="selector-tag">certs</span></span><br><span class="line">├── <span class="selector-tag">crl</span></span><br><span class="line">├── <span class="selector-tag">newcerts</span></span><br><span class="line">└── <span class="selector-tag">private</span></span><br><span class="line">    └── <span class="selector-tag">cakey</span><span class="selector-class">.pem</span></span><br></pre></td></tr></table></figure>
+<p>在CA目录下生成数据库索引文件index.txt和序列号文件serial、crlnumber</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> touch index.txt serial crlnumber</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> <span class="built_in">echo</span> 01 &gt; serial</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> tree</span></span><br><span class="line">.</span><br><span class="line">├── cacert.pem</span><br><span class="line">├── certs</span><br><span class="line">├── crl</span><br><span class="line">├── crlnumber</span><br><span class="line">├── index.txt</span><br><span class="line">├── newcerts</span><br><span class="line">├── private</span><br><span class="line">│   └── cakey.pem</span><br><span class="line">└── serial</span><br></pre></td></tr></table></figure>
+<p>二、客户端申请证书</p>
+<p>以web服务器为例，需要将私钥生成在web服务器的指定目录中</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">apache httpd</span><br><span class="line"><span class="meta">$</span><span class="bash"> su -l</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> <span class="built_in">cd</span> /etc/httpd;mkdir ssl</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> <span class="built_in">cd</span> ssl</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> (<span class="built_in">umask</span> 077;openssl genrsa 1024 &gt; httpd.key)</span></span><br><span class="line">Generating RSA private key, 1024 bit long modulus</span><br><span class="line">.........++++++</span><br><span class="line">....++++++</span><br><span class="line">e is 65537 (0x10001)</span><br></pre></td></tr></table></figure>
+<p>生成证书签署请求</p>
+<figure class="highlight delphi"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">[root@ww1 ssl]# openssl req -new -key httpd.key -<span class="keyword">out</span> httpd.csr</span><br><span class="line">Country <span class="keyword">Name</span> (<span class="number">2</span> letter code) [XX]:CN #需要与CA证书中信息相同</span><br><span class="line">State <span class="keyword">or</span> Province <span class="keyword">Name</span> (full <span class="keyword">name</span>) []:Jiangsu #需要与CA证书中信息相同</span><br><span class="line">Locality <span class="keyword">Name</span> (eg, city) [<span class="keyword">Default</span> City]:Nanjing</span><br><span class="line">Organization <span class="keyword">Name</span> (eg, company) [<span class="keyword">Default</span> Company Ltd]:III #需要与CA证书中信息相同</span><br><span class="line">Organizational <span class="keyword">Unit</span> <span class="keyword">Name</span> (eg, section) []:OPS</span><br><span class="line">Common <span class="keyword">Name</span> (eg, your <span class="keyword">name</span> <span class="keyword">or</span> your server<span class="string">'s hostname) []:ww1.yellowdog.com</span></span><br><span class="line"><span class="string">Email Address []:webmaster@yellowdog.com</span></span><br><span class="line"><span class="string">Please enter the following '</span>extra<span class="string">' attributes</span></span><br><span class="line"><span class="string">to be sent with your certificate request</span></span><br><span class="line"><span class="string">A challenge password []:</span></span><br><span class="line"><span class="string">An optional company name []:</span></span><br></pre></td></tr></table></figure>
+<p>这里需要注意的是客户端生成证书签署请求的信息中，CountryName、stateOrProvinceName和organizationName需要和CA证书中的信息相匹配，也可以修改CA配置文件<code>/etc/pki/tls/openssl.cnf</code>中<code>[ plolicy_match ]</code>修改匹配要求。 </p>
+<p>将证书签署请求文件http.csr发送至CA</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> scp httpd.csr 10.10.10.100:/tmp</span></span><br></pre></td></tr></table></figure>
+<p>另外，在必要情况下，需要吊销证书</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> openssl ca -revoke /path/to/somefile.crt</span></span><br></pre></td></tr></table></figure>
+<p>三、CA签署证书签署请求</p>
+<p>对证书签署请求进行签署</p>
+<figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">[root<span class="variable">@sysadmin</span> ~]<span class="comment"># openssl ca -in /tmp/httpd.csr -out /etc/pki/CA/newcerts/httpd.crt #应该找一个目录统一保存，已被后续吊销使用</span></span><br><span class="line">Using configuration from /etc/pki/tls/openssl.cnf</span><br><span class="line">Check that the request matches the signature</span><br><span class="line">Signature ok</span><br><span class="line">Certificate <span class="symbol">Details:</span></span><br><span class="line">        Serial <span class="symbol">Number:</span> <span class="number">1</span> (<span class="number">0x1</span>)</span><br><span class="line">        Validity</span><br><span class="line">            Not <span class="symbol">Before:</span> Jan <span class="number">24</span> <span class="number">06</span><span class="symbol">:</span><span class="number">57</span><span class="symbol">:</span><span class="number">21</span> <span class="number">2018</span> GMT</span><br><span class="line">            Not After : Jan <span class="number">24</span> <span class="number">06</span><span class="symbol">:</span><span class="number">57</span><span class="symbol">:</span><span class="number">21</span> <span class="number">2019</span> GMT</span><br><span class="line">        <span class="symbol">Subject:</span></span><br><span class="line">            countryName               = CN</span><br><span class="line">            stateOrProvinceName       = Jiangsu</span><br><span class="line">            organizationName          = III</span><br><span class="line">            organizationalUnitName    = OPS</span><br><span class="line">            commonName                = ww1.yellowdog.com</span><br><span class="line">            emailAddress              = webmaster<span class="variable">@yellowdog</span>.com</span><br><span class="line">        X509v3 <span class="symbol">extensions:</span></span><br><span class="line">            X509v3 Basic <span class="symbol">Constraints:</span> </span><br><span class="line">                <span class="symbol">CA:</span>FALSE</span><br><span class="line">            Netscape <span class="symbol">Comment:</span> </span><br><span class="line">                OpenSSL Generated Certificate</span><br><span class="line">            X509v3 Subject Key <span class="symbol">Identifier:</span> </span><br><span class="line">                <span class="symbol">F0:</span><span class="number">2</span><span class="symbol">A:</span><span class="symbol">CF:</span><span class="symbol">CE:</span><span class="number">2</span><span class="symbol">B:</span><span class="number">12</span><span class="symbol">:E2</span><span class="symbol">:</span><span class="number">51</span><span class="symbol">:</span><span class="number">5</span><span class="symbol">D:</span><span class="symbol">A8:</span><span class="number">41</span><span class="symbol">:CE</span><span class="symbol">:</span><span class="number">40</span><span class="symbol">:D9</span><span class="symbol">:</span><span class="number">2</span><span class="symbol">E:</span><span class="number">33</span><span class="symbol">:</span><span class="number">7</span><span class="symbol">E:</span><span class="symbol">BE:</span><span class="symbol">B3:</span>F8</span><br><span class="line">            X509v3 Authority Key <span class="symbol">Identifier:</span> </span><br><span class="line">                <span class="symbol">keyid:</span><span class="number">47</span><span class="symbol">:AC</span><span class="symbol">:</span><span class="number">01</span><span class="symbol">:EE</span><span class="symbol">:</span><span class="number">76</span><span class="symbol">:D1</span><span class="symbol">:</span><span class="number">82</span><span class="symbol">:EB</span><span class="symbol">:DA</span><span class="symbol">:C2</span><span class="symbol">:</span><span class="number">68</span><span class="symbol">:</span><span class="number">1</span><span class="symbol">D:</span><span class="number">65</span><span class="symbol">:B0</span><span class="symbol">:F7</span><span class="symbol">:C7</span><span class="symbol">:</span><span class="number">5</span><span class="symbol">A:</span><span class="symbol">F8:</span><span class="symbol">D8:</span>F6</span><br><span class="line"></span><br><span class="line">Certificate is to be certified <span class="keyword">until</span> Jan <span class="number">24</span> <span class="number">06</span><span class="symbol">:</span><span class="number">57</span><span class="symbol">:</span><span class="number">21</span> <span class="number">2019</span> GMT (<span class="number">365</span> days)</span><br><span class="line">Sign the certificate? [y/n]<span class="symbol">:y</span></span><br><span class="line"><span class="number">1</span> out of <span class="number">1</span> certificate requests certified, commit? [y/n]y</span><br><span class="line">Write out database with <span class="number">1</span> new entries</span><br><span class="line">Data Base Updated</span><br></pre></td></tr></table></figure>
+<p>签署完成后将证书发送给证书申请者</p>
+<figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"># scp <span class="regexp">/tmp/</span>httpd.crt <span class="number">10.10</span>.<span class="number">10.101</span>:<span class="regexp">/etc/</span>httpd<span class="regexp">/ssl/</span></span><br></pre></td></tr></table></figure>
+<h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><p><a href="http://blog.51cto.com/shjia/1426232" target="_blank" rel="noopener">OpenSSL之安全通讯基础</a></p>
+<p><a href="https://mp.weixin.qq.com/s/StqqafHePlBkWAPQZg3NrA" target="_blank" rel="noopener">码农翻身：一个故事讲完https</a></p>
+<p><a href="http://www.ruanyifeng.com/blog/2011/08/what_is_a_digital_signature.html" target="_blank" rel="noopener">数字签名是什么？</a></p>
+<p><a href="SSL/TLS协议运行机制的概述">SSL/TLS协议运行机制的概述</a></p>
+<p><a href="SSL/TLS原理详解">SSL/TLS原理详解</a></p>
+
+
+                <hr>
+
+                
+
+                <ul class="pager">
+                    
+                    
+                        <li class="next">
+                            <a href="/2017/12/31/TCP三次握手/" data-toggle="tooltip" data-placement="top" title="经典问题：TCP连接的建立和断开">Next Post &rarr;</a>
+                        </li>
+                    
+                </ul>
+
+                
+
+                
+                <!-- disqus 评论框 start -->
+                <div class="comment">
+                    <div id="disqus_thread" class="disqus-thread"></div>
+                </div>
+                <!-- disqus 评论框 end -->
+                
+
+            </div>
+    <!-- Side Catalog Container -->
+        
+
+    <!-- Sidebar Container -->
+
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <!-- no hr -->
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                       
+                    </div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>FRIENDS</h5>
+                <ul class="list-inline">
+
+                    
+                        <li><a href="#" target="_blank">留着</a></li>
+                    
+                        <li><a href="#" target="_blank">也留着</a></li>
+                    
+                </ul>
+                
+            </div>
+
+        </div>
+    </div>
+</article>
+
+
+
+
+<!-- disqus 公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = "hexo-theme-huxblog";
+    var disqus_identifier = "https://simontage.github.io/2018/01/19/安全通信-OpenSSL/";
+    var disqus_url = "https://simontage.github.io/2018/01/19/安全通信-OpenSSL/";
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<!-- disqus 公共JS代码 end -->
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("https://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'always',
+          placement: 'right',
+          icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+
+    <!-- Footer -->
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                
+                
+                
+
+                
+
+                
+
+                
+
+                
+
+                </ul>
+                <p class="copyright text-muted">
+                    Copyright &copy; Manson&#39;s Notes 2018 
+                    <br>
+                    Theme by <a href="http://huangxuan.me">Hux</a> 
+                    <span style="display: inline-block; margin: 0 5px;">
+                        <i class="fa fa-heart"></i>
+                    </span> 
+                    Ported by <a href="http://blog.kaijun.rocks">Kaijun</a> | 
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="91px" height="20px"
+                        src="https://ghbtns.com/github-btn.html?user=kaijun&repo=hexo-theme-huxblog&type=star&count=true" >
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js"></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js"></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/hux-blog.min.js"></script>
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/    
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("https://simontage.github.io/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("https://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+<script>
+    // dynamic User by Hux
+    var _gaId = 'UA-49627206-1';
+    var _gaDomain = 'null';
+
+    // Originial
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', _gaId, _gaDomain);
+    ga('send', 'pageview');
+</script>
+
+
+
+
+<!-- Baidu Tongji -->
+
+
+<!-- Side Catalog -->
+
+
+
+
+
+<!-- Image to hack wechat -->
+<img src="https://simontage.github.io/img/icon_wechat.png" width="0" height="0" />
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>
