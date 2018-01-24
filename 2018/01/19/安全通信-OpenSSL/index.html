@@ -155,7 +155,7 @@
 <!-- Post Header -->
 <style type="text/css">
     header.intro-header{
-        background-image: url('/img/home-bg.jpg')
+        background-image: url('ssl-greenbar.jpg')
     }
 </style>
 <header class="intro-header" >
@@ -164,6 +164,10 @@
             <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
                 <div class="post-heading">
                     <div class="tags">
+                        
+                          <a class="tag" href="/tags/#基础" title="基础">基础</a>
+                        
+                          <a class="tag" href="/tags/#Linux" title="Linux">Linux</a>
                         
                     </div>
                     <h1>网络安全通信-OpenSSL</h1>
@@ -316,7 +320,7 @@
 </ul>
 <p>熵池中随机数的来源有硬盘IO中断时间间隔和键盘IO中断时间间隔，并且熵池的随机数只能被使用一次。伪随机数是由程序生成的，不安全。</p>
 </blockquote>
-<h2 id="使用OpenSSL构建私有PKI体系框架"><a href="#使用OpenSSL构建私有PKI体系框架" class="headerlink" title="使用OpenSSL构建私有PKI体系框架"></a>使用OpenSSL构建私有PKI体系框架</h2><p>openssl在建立私有CA时，使用的配置文件是<code>/etc/pki/tls/openssl.cnf</code>中<code>ca</code> 和<code>[ CA default ]</code>定义的内容</p>
+<h2 id="使用OpenSSL构建私有PKI体系框架"><a href="#使用OpenSSL构建私有PKI体系框架" class="headerlink" title="使用OpenSSL构建私有PKI体系框架"></a>使用OpenSSL构建私有PKI体系框架</h2><p>openssl在建立私有CA时，使用的配置文件是<code>/etc/pki/tls/openssl.cnf</code>中<code>[ ca ]</code> 和<code>[ CA default ]</code>定义的内容</p>
 <figure class="highlight clean"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line">$ vim /etc/pki/tls/openssl.cnf</span><br><span class="line">...</span><br><span class="line">[ ca ]</span><br><span class="line">default_ca      = CA_default            # The default ca section</span><br><span class="line">####################################################################</span><br><span class="line">[ CA_default ]</span><br><span class="line">dir             = /etc/pki/CA           # Where everything is kept</span><br><span class="line">certs           = $dir/certs            # Where the issued certs are kept</span><br><span class="line">crl_dir         = $dir/crl              # Where the issued crl are kept</span><br><span class="line">database        = $dir/index.txt        # database index file.</span><br><span class="line">#unique_subject = no                    # Set to <span class="string">'no'</span> to allow creation <span class="keyword">of</span></span><br><span class="line">                                        # several ctificates <span class="keyword">with</span> same subject.</span><br><span class="line">new_certs_dir   = $dir/newcerts         # default place for new certs.</span><br><span class="line"></span><br><span class="line">certificate     = $dir/cacert.pem       # The CA certificate</span><br><span class="line">serial          = $dir/serial           # The current serial number</span><br><span class="line">crlnumber       = $dir/crlnumber        # the current crl number</span><br><span class="line">                                        # must be commented out to leave a V1 CRL</span><br><span class="line">crl             = $dir/crl.pem          # The current CRL</span><br><span class="line">private_key     = $dir/private/cakey.pem# The private key</span><br><span class="line">RANDFILE        = $dir/private/.rand    # private random number file</span><br><span class="line"></span><br><span class="line">x509_extensions = usr_cert              # The extentions to add to the cert</span><br><span class="line"></span><br><span class="line"># Comment out the following two lines for the <span class="string">"traditional"</span></span><br><span class="line"># (and highly broken) format.</span><br><span class="line">name_opt        = ca_default            # Subject Name options</span><br><span class="line">cert_opt        = ca_default            # Certificate field options</span><br><span class="line"></span><br><span class="line"># Extension copying option: use <span class="keyword">with</span> caution.</span><br><span class="line"># copy_extensions = copy</span><br><span class="line"></span><br><span class="line"># Extensions to add to a CRL. Note: Netscape communicator chokes on V2 CRLs</span><br><span class="line"># so this is commented out by default to leave a V1 CRL.</span><br><span class="line"># crlnumber must also be commented out to leave a V1 CRL.</span><br><span class="line"># crl_extensions        = crl_ext</span><br><span class="line"></span><br><span class="line">default_days    = <span class="number">365</span>                   # how long to certify for</span><br><span class="line">default_crl_days= <span class="number">30</span>                    # how long before next CRL</span><br><span class="line">default_md      = sha256                # use SHA<span class="number">-256</span> by default</span><br><span class="line">preserve        = no                    # keep passed DN ordering</span><br><span class="line"></span><br><span class="line"># A few difference way <span class="keyword">of</span> specifying how similar the request should look</span><br><span class="line"># For type CA, the listed attributes must be the same, and the optional</span><br><span class="line"># and supplied fields are just that :-)</span><br><span class="line">policy          = policy_match</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
 <p>一、CA生成非对称加密密钥对，并自签署证书</p>
 <p>在/etc/pki/CA/private目录下建立私钥</p>
@@ -388,6 +392,10 @@
                     <h5><a href="/tags/">FEATURED TAGS</a></h5>
                     <div class="tags">
                        
+                          <a class="tag" href="/tags/#基础" title="基础">基础</a>
+                        
+                          <a class="tag" href="/tags/#Linux" title="Linux">Linux</a>
+                        
                     </div>
                 </section>
                 
