@@ -90,14 +90,14 @@
 
                         
                         <li>
-                            <a href="/archives/">Archives</a>
+                            <a href="/about/">About</a>
                         </li>
                         
                     
 
                         
                         <li>
-                            <a href="/about/">About</a>
+                            <a href="/archives/">Archives</a>
                         </li>
                         
                     
@@ -196,6 +196,7 @@
                 <p>防火墙（Firewall）是一种隔离工具，主要作用是对主机进行隔离以免受到病毒侵害。防火墙工作于主机或网络边缘，对于进出本主机或网络的报文根据定义的检查规则进行匹配，并对匹配的报文进行相应处理。</p>
 <p>防火墙可以使用专有的硬件或软件，也可以使用两者组合。防火墙有两类，一类是主机防火墙，一类是网络防火墙。</p>
 <p>iptables/netfilter是在Linux中的软件防火墙，netfilter是在系统内核中运行的报文过滤框架，iptables是运行在用户空间的用来对对netfilter设置规则的命令行工具。</p>
+<p>在CentOS 7中引入了firewalld程序，它是基于iptables之上的，更便于配置iptables的程序。而iptables在之后也可能会被nftables取代。</p>
 <h2 id="netfilter-四表五链"><a href="#netfilter-四表五链" class="headerlink" title="netfilter-四表五链"></a>netfilter-四表五链</h2><p>netfilter在系统内核中定义了5个位置（hooks），在这5个位置上定义了相应的函数，当数据包流经此位置时就会调用挂载在此位置的函数，回调函数操作后就会修改数据包的内容或位置。</p>
 <p>五个“钩子”在内核的位置：（图要修改）</p>
 <p><img src="http://om8bgr2y6.bkt.clouddn.com/Snip20180129_5.png" alt=""></p>
@@ -357,57 +358,32 @@
 </li>
 <li><p>SubCommand</p>
 <p>a.链管理：</p>
-<p>|   选项 | 描述                                       |<br>| —: | —————————————- |<br>|   -F | flush，清空规则链。省略链表示清空指定表上的所有链              |<br>|   -N | new，创建新的自定义规则链                           |<br>|   -X | drop，删除用户自定义的空规则链                        |<br>|   -Z | zero，置零规则计数器                             |<br>|   -P | policy，为指定链设置默认策略；                                                                                                         对filter表中的链而言，默认策略通常用ACCEPT、DROP、REJECT |<br>|   -E | rename，重命名自定义链；                                                                                                                 引用计数不为0的自定义链无法改名也无法删除 |</p>
+<p><img src="http://om8bgr2y6.bkt.clouddn.com//iptables链管理子选项new.png" alt=""></p>
 <p> b.规则管理</p>
-<p>|   选项 | 描述                                       |<br>| —: | :————————————— |<br>|   -A | append，将新的规则追加于指定链尾部                     |<br>|   -I | insert，将新规则插入至指定链的指定位置[rulenum]，省略位置插入在第一条 |<br>|   -D | delete，删除指定链上的制定规则，可以指定匹配条件，也可以指定规则编号    |<br>|   -R | replace，替换指定链上的规则 c.查看规则                 |</p>
+<p><img src="http://om8bgr2y6.bkt.clouddn.com//iptables 规则管理子选项.png" alt=""></p>
+<p>c.查看规则</p>
+<p>查看iptables的规则使用-L选项，查看规则还有一些子选项，用在<code>-L</code>之后</p>
+<p><img src="http://om8bgr2y6.bkt.clouddn.com//2018/2/5-上午11:13:16.png" alt=""></p>
 </li>
 </ul>
-<p>  c. 查看规则</p>
-<p>  查看iptables的规则使用-L选项，查看规则还有一些子选项，用在<code>-L</code>之后</p>
-<table>
-<thead>
-<tr>
-<th style="text-align:right">子选项</th>
-<th style="text-align:left">描述</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:right">-n</td>
-<td style="text-align:left">numberic，以数字格式显示地址和端口</td>
-</tr>
-<tr>
-<td style="text-align:right">-v/vv/vvv/vvvv</td>
-<td style="text-align:left">verbose，显示详细信息</td>
-</tr>
-<tr>
-<td style="text-align:right">–line-numbers</td>
-<td style="text-align:left">显示规则序号</td>
-</tr>
-<tr>
-<td style="text-align:right">-x</td>
-<td style="text-align:left">exactly，显示计数器计数结果的精确值</td>
-</tr>
-</tbody>
-</table>
 <ul>
 <li><p>rule-specification</p>
-<p>书写规则中的匹配条件有两种，一种是基本匹配，一种是扩展匹配。</p>
+<p>书写规则中的匹配条件有两种，一种是基本匹配，一种是扩展匹配</p>
 <p>a.基本匹配（通用匹配）</p>
-<p>|                                  匹配条件 | 描述                                       |<br>| ————————————: | —————————————- |<br>|     [!] -s/–src/–source IP|NETADDR | 检查报文中源IP地址是否符合此处指定的地址范围                  |<br>| [!] -d/-dst/–destination IP|NETADDR | 检查报文中目标IP是否符合此次指定的地址范围                   |<br>|       [!] -p/-protocol tcp|udp|icmp | 检查报文中的协议，即IP首部中Protocols所标识的协议           |<br>|           [!] -i/–in-interface IFACE | 数据报文的流入接口，仅能用于PREROUTING、INPUT、FORWARD链上 |<br>|          [!] -o/–out-interface IFACE | 数据报文流出接口，仅能用于FORWARD、OUTPUT、POSTROUTING链上 |</p>
+<p><img src="http://om8bgr2y6.bkt.clouddn.com//2018/2/5-上午11:23:43.png" alt=""></p>
 <p>b.扩展匹配</p>
 <p>扩展匹配有两种，一种是隐式扩展，一种是显式扩展，显示扩展要是明确使用选项<code>-m</code></p>
 <p>扩展功能的实现依赖于/usr/lib64/xtables目录中so文件，可以对匹配条件和目标做扩展</p>
 <p>隐式扩展使用<code>-p</code>指定协议后，可以对指定协议进行更详细的匹配，如端口号等</p>
 <p>对TCP进行扩展匹配：<code>-p tcp</code></p>
-<p>| 扩展匹配选项                  | 描述                                       |<br>| :———————- | :————————————— |<br>| –dport PORT[-PORT]     | 匹配TCP目标端口，可以是单个端口或连续多个端口                 |<br>| –sport PORT[-PORT]     | 匹配TCP源端口                                 |<br>| –tcp-flags LIST1 LIST2 | 检查LIST1所指明的所有标志位，且这其中，LIST2所表示出的所有标记位必须为1，而余下的必须为0；没有LIST1中指明的，不作检查； |<br>| –syn                   | 相当于–tcp-flags SYN,ACK,FIN,RST SYN，通过TCP第一次握手的包 |</p>
+<p><img src="http://om8bgr2y6.bkt.clouddn.com//2018/2/6-下午8:04:43.png" alt=""></p>
 <p>对UDP进行扩展匹配：<code>-p udp</code></p>
-<p>| 扩展匹配选项  |  描述  |<br>| :—–: | :–: |<br>| –dport |      |<br>| –sport |      |</p>
+<p><img src="http://om8bgr2y6.bkt.clouddn.com//iptables_udp扩展匹配选项new.png" alt=""></p>
 <p>对ICMP进行扩展匹配：<code>-p icmp</code></p>
-<p>|                  扩展匹配选项                  |     描述      |<br>| :————————————–: | :———: |<br>| –icmp-type 0(echo-reply)|8(echo-request) | 指定ICMP的报文类型 |</p>
+<p><img src="http://om8bgr2y6.bkt.clouddn.com//iptables_icmp扩展匹配选项.png" alt=""></p>
 </li>
 <li><p><code>-j TARGET</code> 设置动作目标</p>
-<p>|    目标动作    |       详细        |<br>| :——–: | :————-: |<br>|   ACCEPT   |       接受        |<br>|    DROP    |       丢弃        |<br>|   REJECT   |       拒绝        |<br>|   RETURN   |      返回调用链      |<br>|  REDIRECT  |      端口重定向      |<br>|    LOG     |      记录日志       |<br>|    MARK    |     做防火墙标记      |<br>|    DNAT    |     目标地址转换      |<br>|    SNAT    |      源地址转换      |<br>| MASQUERADE |      地址伪装       |<br>|    自定义链    | 由自定义链上的规则进行匹配检查 |</p>
+<p><img src="http://om8bgr2y6.bkt.clouddn.com//2018/2/6-下午8:10:05.png" alt=""></p>
 </li>
 </ul>
 <h2 id="显式扩展的使用"><a href="#显式扩展的使用" class="headerlink" title="显式扩展的使用"></a>显式扩展的使用</h2><p>iptables的显式扩展必须显式指明使用的扩展模块（<code>rpm -ql iptables | grep &quot;[[:lower:]]\+\.so$&quot;</code>）</p>
@@ -415,28 +391,28 @@
 <p>常用扩展</p>
 <ul>
 <li><p>multiport扩展：以离散方式定义多端口匹配，最多指定15个端口</p>
-<p>|                    选项                    |    描述    |<br>| :————————————–: | :——: |<br>| [!] –source-ports,–sports port[,port|,port:port]… | 指明多个源端口  |<br>| –destination-ports,–dports port[,port|,prot:port]… | 指明多个目标端口 |<br>|    –ports port[,port|,prot:prot]…    |  指明多个端口  |</p>
+<p><img src="http://om8bgr2y6.bkt.clouddn.com//2018/2/6-下午8:11:53.png" alt=""></p>
 </li>
 <li><p>iprange扩展：指明连续的（但不能扩展为整个网络）IP地址范围</p>
-<p>|             选项             |      描述       |<br>| :————————: | :———–: |<br>| [!] –src-range from [-to] | 指明连续的源IP地址范围  |<br>| [!] –dst-range from [-to] | 指明连续的目标IP地址范围 |</p>
+<p><img src="http://om8bgr2y6.bkt.clouddn.com//2018/2/6-下午8:12:56.png" alt=""></p>
 </li>
 <li><p>string扩展：检查报文中出现的字符串</p>
-<p>|            选项            |         描述         |<br>| :———————-: | :—————-: |<br>|     -algo {bm|kmp}      | 指定字符串比对算法，必须要指定该选项 |<br>|   [!] –string pattern   |     指明需要查找的字符串     |<br>| [!] –hex-string pattern |   指明十六进制编码后的字符串    |</p>
+<p><img src="http://om8bgr2y6.bkt.clouddn.com//2018/2/6-下午8:14:18.png" alt=""></p>
 <p>示例：</p>
 <figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">iptables -A <span class="selector-tag">input</span> -<span class="selector-tag">p</span> tcp --dport <span class="number">80</span> -m string --algo bm --string <span class="string">'GET /index.html'</span> -j LOG</span><br></pre></td></tr></table></figure>
 </li>
 <li><p>time扩展：根据报文的到达时间与指定的时间范围进行匹配</p>
-<p>|                    选项                    |          描述          |<br>| :————————————–: | :——————: |<br>| –datestart YYYY[-MM[-DD[Thh[:mm[:ss]]]]] | 指定开始时间，在日期和时间需要使用“T” |<br>| –datestop YYYY[-MM[-DD[Thh[:mm[:ss]]]]] | 指定结束时间，在日期和时间需要使用“T” |<br>|          –timestart hh:mm[:ss]          |        指定开始时间        |<br>|          –timestop hh:mm[:ss]           |        指定结束时间        |<br>|       [!] –monthdays day[,day…]       |       指定每个月的日期       |<br>|       [!] –weekdays day[,day…]        |      指定每个星期中的日期      |</p>
+<p><img src="http://om8bgr2y6.bkt.clouddn.com//2018/2/6-下午8:16:05.png" alt=""></p>
 <p>示例：</p>
 <figure class="highlight applescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">-m <span class="built_in">time</span> <span class="comment">--weekdays Sa,Su</span></span><br><span class="line">-m <span class="built_in">time</span> <span class="comment">--datestart 2019-01-02 --datestop 2020-01-02</span></span><br><span class="line">-m <span class="built_in">time</span> <span class="comment">--datestart 2018-02-02T21:00 --datestop 2018-02-02T22:59:59</span></span><br><span class="line">-m <span class="built_in">time</span> <span class="comment">--timestart 09:00 --timestop 18:00</span></span><br><span class="line">-m <span class="built_in">time</span> <span class="comment">--weekdays Fri --monthdays 22,23,24,25,26 #匹配每月22-26日中是周五的日期</span></span><br></pre></td></tr></table></figure>
 </li>
 <li><p>connlimit扩展：根据每客户端IP（也可以是地址块）做并发连接数数量匹配</p>
-<p>|         选项          |     描述     |<br>| :—————–: | :——–: |<br>| –connlimit-above n |  连接的数量大于n  |<br>|  –conlimit-upto n  | 连接的数量小于等于n |</p>
+<p><img src="http://om8bgr2y6.bkt.clouddn.com//2018/2/6-下午8:17:07.png" alt=""></p>
 <p>示例：</p>
 <figure class="highlight brainfuck"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">每客户端只允许建立两个telenet连接</span></span><br><span class="line"><span class="comment">iptables</span> <span class="literal">-</span><span class="comment">A</span> <span class="comment">INPUT</span> <span class="literal">-</span><span class="comment">p</span> <span class="comment">tcp</span> <span class="literal">-</span><span class="literal">-</span><span class="comment">syn</span> <span class="literal">-</span><span class="literal">-</span><span class="comment">dport</span> <span class="comment">23</span> <span class="literal">-</span><span class="comment">m</span> <span class="comment">connlimit</span> <span class="literal">-</span><span class="literal">-</span><span class="comment">connlimit</span><span class="literal">-</span><span class="comment">above</span> <span class="comment">2</span> <span class="literal">-</span><span class="comment">j</span> <span class="comment">REFECT</span> <span class="comment">或</span></span><br><span class="line"><span class="comment">iptables</span> <span class="literal">-</span><span class="comment">A</span> <span class="comment">INPUT</span> <span class="literal">-</span><span class="comment">p</span> <span class="comment">tcp</span> <span class="literal">-</span><span class="literal">-</span><span class="comment">syn</span> <span class="literal">-</span><span class="literal">-</span><span class="comment">dport</span> <span class="comment">23</span> <span class="literal">-</span><span class="comment">m</span> <span class="comment">connlimit</span> <span class="literal">-</span><span class="literal">-</span><span class="comment">connlimit</span><span class="literal">-</span><span class="comment">upto</span> <span class="comment">2</span> <span class="literal">-</span><span class="comment">j</span> <span class="comment">ACCEPT</span></span><br></pre></td></tr></table></figure>
 </li>
 <li><p>limit扩展：基于令牌桶过滤器根据收发报文的速率做检查</p>
-<p>|                    选项                    |   描述    |<br>| :————————————–: | :—–: |<br>| –limit rate[/second|/minute|/hour|/day] | 设置匹配的速率 |<br>|           –limit-burst number           | 设置初始的峰值 |</p>
+<p><img src="http://om8bgr2y6.bkt.clouddn.com//2018/2/6-下午8:19:29.png" alt=""></p>
 </li>
 <li><p>state扩展：根据连接追踪机制检查连接的状态</p>
 <p>连接状态是iptables在内核内存中对连接进行辨识的机制。</p>
@@ -452,8 +428,7 @@
 <li>RELATED：相关的连接，如ftp协议的命令连接和数据连接是相关连接</li>
 <li>INVALIED：无法识别的连接</li>
 </ol>
-<p>|            选项             |  描述  |<br>| :———————–: | :–: |<br>| –state state1,state2,… | 指定状态 |</p>
-<p>如何开放被动模式的FTP服务？</p>
+<p><img src="http://om8bgr2y6.bkt.clouddn.com//2018/2/6-下午8:22:38.png" alt=""></p>
 </li>
 </ul>
 <h2 id="使用示例"><a href="#使用示例" class="headerlink" title="使用示例"></a>使用示例</h2><ol>
@@ -489,6 +464,10 @@
 </li>
 <li><p>合并并优化 7 和 10</p>
 <figure class="highlight pf"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">iptables -I INPUT -m <span class="keyword">state</span> --state ESTABLISHD</span><br><span class="line">iptables -I INPUT <span class="number">2</span> -d 本机IP地址 -p tcp -m multiport --dports <span class="number">22</span>,<span class="number">80</span> -m <span class="keyword">state</span> --state NEW -j ACCEPT</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>开放被动模式下的 ftp 服务</p>
+<p>启用内核模块</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
 <p>​</p>
 </li>
 </ol>
