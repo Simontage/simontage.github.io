@@ -90,14 +90,14 @@
 
                         
                         <li>
-                            <a href="/about/">About</a>
+                            <a href="/archives/">Archives</a>
                         </li>
                         
                     
 
                         
                         <li>
-                            <a href="/archives/">Archives</a>
+                            <a href="/about/">About</a>
                         </li>
                         
                     
@@ -386,6 +386,8 @@
 <p><img src="http://om8bgr2y6.bkt.clouddn.com//2018/2/6-下午8:10:05.png" alt=""></p>
 </li>
 </ul>
+<p>规则定义好后，如果重新服务规则会丢失，所以需要保存iptables规则到文件中，使用<code>iptables-save</code>配合命令重定向保存至文件中，如<code>iptables-save &gt; /etc/iptables.1</code>。</p>
+<p>将文本文件中的iptables规则恢复使用<code>iptables-restore</code>配置命令重定向，如<code>iptables-restore &lt; /etc/iptables.1</code></p>
 <h2 id="显式扩展的使用"><a href="#显式扩展的使用" class="headerlink" title="显式扩展的使用"></a>显式扩展的使用</h2><p>iptables的显式扩展必须显式指明使用的扩展模块（<code>rpm -ql iptables | grep &quot;[[:lower:]]\+\.so$&quot;</code>）</p>
 <p>在CentOS7中使用<code>man iptables-extensions</code>获取扩展帮助；在CentOS6中使用<code>man iptables</code>获取扩展帮助</p>
 <p>常用扩展</p>
@@ -466,7 +468,35 @@
 <figure class="highlight pf"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">iptables -I INPUT -m <span class="keyword">state</span> --state ESTABLISHD</span><br><span class="line">iptables -I INPUT <span class="number">2</span> -d 本机IP地址 -p tcp -m multiport --dports <span class="number">22</span>,<span class="number">80</span> -m <span class="keyword">state</span> --state NEW -j ACCEPT</span><br></pre></td></tr></table></figure>
 </li>
 <li><p>开放被动模式下的 ftp 服务</p>
-<p>启用内核模块</p>
+<p>启用状态追踪中ftp专用的模块<code>modprobe nf_conntrack_ftp</code></p>
+<blockquote>
+<p>查询nf_conntrack_ftp模块的详细信息使用<code>modinfo nf_conntrack_ftp.ko</code> </p>
+<p>查看已经加载的模块使用<code>lsmod</code></p>
+</blockquote>
+<p>放行请求报文</p>
+<ul>
+<li><p>命令连接：NEW和ESTABLISHED</p>
+</li>
+<li><p>数据连接：RELATED和ESTABLISHED</p>
+<figure class="highlight pf"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">iptables -A INPUT -d LocalIP -p tcp --dport <span class="number">21</span> -m <span class="keyword">state</span> --state NEW,ESTABLISHED -j ACCEPT</span><br><span class="line">iptables -A INPUT -d LocalIP -p tcp -m <span class="keyword">state</span> --state RELATED,ESTABLISHED -j ACCEPT</span><br></pre></td></tr></table></figure>
+<p>放在整体IPtables规则中</p>
+<figure class="highlight pf"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">iptables -I INPUT -m <span class="keyword">state</span> --state ESTABLISHED</span><br><span class="line">iptables -A INPUT -d <span class="number">192.168</span>.<span class="number">2.100</span> -p tcp -m multiport --dport <span class="number">21</span>,<span class="number">22</span>,<span class="number">80</span> -m <span class="keyword">state</span> --state NEW -j ACCEPT <span class="comment">#放行命令连接</span></span><br><span class="line">iptables -R INPUT <span class="number">1</span> -m <span class="keyword">state</span> --state ESTABLISHED,RELATED -j ACCEPT <span class="comment">#放行数据连接</span></span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>放行响应报文：ESTABLISHED</p>
+<figure class="highlight pf"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">iptables -I OUTPUT -m <span class="keyword">state</span> --state ESTABLISHED</span><br></pre></td></tr></table></figure>
+<p>​</p>
+<p>​</p>
+<p>​</p>
+<p>​</p>
+</li>
+</ol>
+<h1 id="提示"><a href="#提示" class="headerlink" title="提示"></a>提示</h1><ol>
+<li><p>在调试iptables规则时，保存规则至文件后，首先将默认规则修改为ACCEPT，然后再将规则清空</p>
+<figure class="highlight tp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">iptables-save &gt; /etc/iptables<span class="number">.1</span></span><br><span class="line">iptables -<span class="keyword">P</span> INPUT <span class="keyword">ACC</span>EPT</span><br><span class="line">iptables -<span class="keyword">P</span> OUTPUT <span class="keyword">ACC</span>EPT</span><br><span class="line">iptables -F</span><br><span class="line">iptables -<span class="keyword">X</span></span><br><span class="line">iptables -<span class="keyword">Z</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>调试 iptables 规则时，写一个定时执行的脚本关闭 iptables，以防止管理员无法连入主机。</p>
+<p>即可以关闭 iptables 也可以清空所有规则</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
 <p>​</p>
 </li>
