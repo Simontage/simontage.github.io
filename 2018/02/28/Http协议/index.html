@@ -13,11 +13,11 @@
 
     <title>
         
-          正则表达式在Shell中的使用 - Manson的备忘录 | Manson&#39;s Notes
+          HTTP协议 - Manson的备忘录 | Manson&#39;s Notes
         
     </title>
 
-    <link rel="canonical" href="https://simontage.github.io/2017/12/28/Regular-Expression/">
+    <link rel="canonical" href="https://simontage.github.io/2018/02/28/Http协议/">
 
     <!-- Bootstrap Core CSS -->
     <link rel="stylesheet" href="/css/bootstrap.min.css">
@@ -155,7 +155,7 @@
 <!-- Post Header -->
 <style type="text/css">
     header.intro-header{
-        background-image: url('regexp-bg.png')
+        background-image: url('banner-Homepage.jpg')
     }
 </style>
 <header class="intro-header" >
@@ -167,14 +167,14 @@
                         
                           <a class="tag" href="/tags/#基本功" title="基本功">基本功</a>
                         
-                          <a class="tag" href="/tags/#正则表达式" title="正则表达式">正则表达式</a>
+                          <a class="tag" href="/tags/#web" title="web">web</a>
                         
                     </div>
-                    <h1>正则表达式在Shell中的使用</h1>
-                    <h2 class="subheading">RegExp in Shell</h2>
+                    <h1>HTTP协议</h1>
+                    <h2 class="subheading"></h2>
                     <span class="meta">
                         Posted by Manson on
-                        2017-12-28
+                        2018-02-28
                     </span>
                 </div>
             </div>
@@ -193,197 +193,275 @@
                 col-md-10 col-md-offset-1
                 post-container">
 
-                <p>正则表达式是处理字符串的工具，使用正则表达式处理引擎工作。正则表达式是使用一类字符所书写出的模式（pattern），这一类字符在正则表达式中称为元字符，元字符是一些不表示字符本身含义，而是额外用于功能性描述的字符。</p>
-<p>正则表达式分为基本正则表达式和扩展正则表达式。</p>
-<h2 id="字符匹配"><a href="#字符匹配" class="headerlink" title="字符匹配"></a>字符匹配</h2><table>
-<thead>
-<tr>
-<th style="text-align:center">元字符</th>
-<th style="text-align:center">功能描述</th>
-<th style="text-align:center">模式</th>
-<th style="text-align:center">匹配字符串</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:center">.</td>
-<td style="text-align:center">匹配任意单个字符，除了“\n”</td>
-<td style="text-align:center">a.c</td>
-<td style="text-align:center">abc</td>
-</tr>
-<tr>
-<td style="text-align:center">[ ]</td>
-<td style="text-align:center">匹配指定范围的任意单个字符</td>
-<td style="text-align:center">a[ab]</td>
-<td style="text-align:center">aa或ab</td>
-</tr>
-<tr>
-<td style="text-align:center">[^ ]</td>
-<td style="text-align:center">匹配指定范围之外的任意单个字符</td>
-<td style="text-align:center">a[^ab]</td>
-<td style="text-align:center">ac</td>
-</tr>
-</tbody>
-</table>
-<p>常见的预定义字符集有：</p>
+                <p>起初为了跨地域共享知识，<a href="https://zh.wikipedia.org/wiki/%E6%8F%90%E5%A7%86%C2%B7%E6%9F%8F%E5%85%A7%E8%8C%B2-%E6%9D%8E" target="_blank" rel="noopener">蒂姆·伯纳斯-李</a>于1989年在欧洲核子研究组织（CERN）设想了一个基本理念：借助多文档之间相互关联形成的超文本（HyperText），连成可互相参阅的WWW（World Wide Web，万维网）。支持这个想法需要三个关键技术是：页面文本标记语言HTML、文档传递协议HTTP和指定文档所在地址的URL（Uniform Resource Locator，统一资源定位符）。</p>
+<p>HTTP协议于1990年问世，但是并未作为标准，被称为HTTP/0.9；1996年5月HTTP正式作为标准公布，版本号HTTP/1.0；1997年1月公布HTTP/1.1，也是目前主流使用的版本；2015年5月，HTTP/2.0作为标准公布。</p>
+<p>URI（Uniform Resource Identifier，统一资源标识符）是由某一协议方案表示的资源的定位标识符。我们更熟悉的URL也能唯一标识一个资源，URL是URI的子集。URI是使用字符串（也可以简单理解为编号）标识某一互联网资源，URL是通过定位的方式来唯一标识一个资源，如在某台主机的某个路径下的某一资源。</p>
+<p>一般的URL由三部分组成：URL方案Scheme、服务器地址和端口、资源路径</p>
+<p>一般的URL格式：<code>&lt;scheme&gt;://&lt;user&gt;:&lt;password&gt;@&lt;host&gt;:&lt;port&gt;/&lt;path&gt;;&lt;params=&gt;?&lt;query=&gt;#&lt;frag&gt;</code></p>
+<p>HTTP协议默认使用80/tcp来传输使用HTML标记的文档，HTTP的客户端多为浏览器，服务端使用的http server，常见的由httpd、nginx、IIS等。</p>
+<p>在发送电子邮件时，除了文本还可以发送多媒体文件，是因为采用了MIME（Multipurpose Internet Mail Extensions，多用途互联网邮件扩展）机制，它允许邮件处理文本、图片、视频等多个不同类型的数据。如，图片等二进制数据以ASCII码字符串编码的方式指明，就是利用MIME来描述标记数据类型。MIME扩展中使用多部分对象合集（Multipart）的方法，来容纳多份不同类型的数据。</p>
+<p>HTTP协议中也采纳了Multipart方法，发送的一份报文主体中可以含有多种类型的实体。</p>
+<h2 id="一次HTTP通信"><a href="#一次HTTP通信" class="headerlink" title="一次HTTP通信"></a>一次HTTP通信</h2><p>在一次HTTP通信中，请求资源的一方是客户端，提供资源的一方是服务端。HTTP协议规定，请求从客户端发出，最后服务端响应该请求并返回。</p>
+<p>HTTP协议使用HTTP报文进行交互，客户端发送的是请求报文，服务端发送的响应报文。HTTP报文由多行字符串构成，其中一个报文可以分为报文首部和报文主体。报文首部是关于请求或响应的内容以及属性，报文主体是本次通信应该发送的数据，报文首部和报文主体之间使用空行分隔。</p>
+<p>一次完整的HTTP请求处理过程：</p>
+<ol>
+<li><strong>建立连接</strong>：客户端发送请求报文；</li>
+<li><strong>接收请求</strong>：服务端接收来自于请求报文中对某一资源的请求；</li>
+<li><strong>处理请求</strong>：服务端对请求报文进行解析，获得请求资源以及请求方法等相关信息，这些信息都包含在请求报文的首部中；</li>
+<li><strong>访问资源</strong>：服务端获取请求报文中请求的资源；</li>
+<li><strong>构建响应报文</strong>：服务端构建含有相关请求资源的响应报文；</li>
+<li><strong>发送响应报文</strong>：服务端将响应报文发送给客户端</li>
+<li><strong>记录日志</strong>：服务端将此次请求的相关信息记录日志</li>
+</ol>
+<p>请求报文由请求行（method、request-url、version）、请求报文首部（请求首部、通用首部、实体首部）和报文主体构成。</p>
+<p>一个请求（request）报文构成</p>
+<p><img src="https://www.ntu.edu.sg/home/ehchua/programming/webprogramming/images/HTTP_RequestMessageExample.png" alt=""></p>
+<p>一个响应报文由状态行（version、status、reason-phrase）、响应报文首部（响应首部、通用首部、实体首部）和报文主体构成</p>
+<p>一个响应（response）报文构成</p>
+<p><img src="https://www.ntu.edu.sg/home/ehchua/programming/webprogramming/images/HTTP_ResponseMessageExample.png" alt=""></p>
+<p>一次请求以及对应的响应被称为一次HTTP的<strong>事务</strong>，HTTP是一种无状态（stateless）协议，一次HTTP事务结束后，连接就会断开，web服务器无法持续追踪访问者来源，为了提高HTTP通信的效率，引入cookie和session机制来保持连接追踪同一用户。</p>
+<blockquote>
+<p>每请求一个资源都需要TCP三次握手，效率十分低下，使用并行请求或保持连接可以提高效率。</p>
+<p>有两个条件触发断开保持连接：限制时间或请求资源数。</p>
+</blockquote>
+<h2 id="HTTP中的方法和首部"><a href="#HTTP中的方法和首部" class="headerlink" title="HTTP中的方法和首部"></a>HTTP中的方法和首部</h2><p>请求方法(method)用来表示客户端希望服务端对资源执行的动作，常用的方法有GET、HEAD、POST方法。</p>
+<p><strong>GET方法</strong></p>
+<p>GET方法用来请求访问被URI识别的资源，服务端解析后返回响应内容。</p>
+<p><strong>HEAD方法</strong></p>
+<p>HEAD方法用来获取响应报文的首部而不需要发送资源。用于确认URI的有效性以及资源的更新日期等。</p>
+<p><strong>POST方法</strong></p>
+<p>POST方法用来向服务器发送要处理的数据。</p>
+<p><strong>OPTIONS方法</strong></p>
+<p>OPTIONS方法用来请求服务器返回对指定资源支持使用的请求方法。</p>
+<p><strong>TRACE方法</strong></p>
+<p>TRACE方法用于追踪请求到达服务器中间经过的代理服务器，定义Max-Forwards首部数值后，每经过一个服务器该数值减一，当数值为0时，收到请求的服务器返回状态码200 OK的响应。</p>
+<p>还有一些其他首部如DELETE，用来按请求URI删除指定的资源；PUT用于将请求报文的主体存储在服务器。</p>
+<p>首部字段（headers）表示请求和响应的各种条件和属性。一般有4种首部，分别是：通用首部、请求首部、响应首部和实体首部。首部字段的构成：<code>首部字段名称： 字段值</code>。</p>
+<p><strong>通用首部</strong>是请求报文和响应报文中都会使用的首部</p>
 <table>
 <thead>
 <tr>
-<th style="text-align:center">字符集</th>
-<th style="text-align:center">模式</th>
+<th style="text-align:left">通用首部</th>
+<th style="text-align:left">说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align:center">大写字母</td>
-<td style="text-align:center">[[:upper:]]</td>
+<td style="text-align:left">Connection</td>
+<td style="text-align:left">连接的管理</td>
 </tr>
 <tr>
-<td style="text-align:center">小写字母</td>
-<td style="text-align:center">[[:lower:]] \ [a-z]</td>
+<td style="text-align:left">Via</td>
+<td style="text-align:left">报文经过的中间节点，即代理服务器的相关信息</td>
 </tr>
 <tr>
-<td style="text-align:center">所有字母</td>
-<td style="text-align:center">[[:alpha:]] 或 \w</td>
+<td style="text-align:left">Cache-Control</td>
+<td style="text-align:left">控制缓存的行为</td>
 </tr>
 <tr>
-<td style="text-align:center">数字</td>
-<td style="text-align:center">[[:digit:]] 或 [0-9] 或 \d</td>
-</tr>
-<tr>
-<td style="text-align:center">数字和字母</td>
-<td style="text-align:center">[[:alnum:]]</td>
-</tr>
-<tr>
-<td style="text-align:center">空格</td>
-<td style="text-align:center">[[:space:]] 或 \</td>
-</tr>
-<tr>
-<td style="text-align:center">标点符号和特殊符号</td>
-<td style="text-align:center">[[:punct:]]</td>
-</tr>
-<tr>
-<td style="text-align:center">非数字</td>
-<td style="text-align:center">[^[:digit:]] 或 \D</td>
-</tr>
-<tr>
-<td style="text-align:center">非空白字符</td>
-<td style="text-align:center">[^\s] 或 \S</td>
-</tr>
-<tr>
-<td style="text-align:center">非单词字符</td>
-<td style="text-align:center">\W 或 [^\w]</td>
+<td style="text-align:left">Date</td>
+<td style="text-align:left">创建报文的日期时间</td>
 </tr>
 </tbody>
 </table>
-<p>字符匹配时，如果字符串中有特殊字符需要匹配，则需要使用转义字符<code>\</code>或字符集[特殊字符]，使其成为原本的含义。</p>
-<p>以上基本正则表达式和扩展正则表达式均适用。</p>
-<h2 id="次数匹配"><a href="#次数匹配" class="headerlink" title="次数匹配"></a>次数匹配</h2><p>次数匹配用来指定匹配其前面字符的次数</p>
+<p><strong>请求首部</strong>是客户端向服务端发送请求报文时使用的首部，补充了请求的信息、</p>
 <table>
 <thead>
 <tr>
-<th style="text-align:center">元字符</th>
-<th style="text-align:center">功能描述</th>
+<th>请求首部</th>
+<th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align:center">*</td>
-<td style="text-align:center">任意次</td>
+<td>Host</td>
+<td>请求资源所在的主机，虚拟主机环境下用于标识不同虚拟主机</td>
 </tr>
 <tr>
-<td style="text-align:center">.*</td>
-<td style="text-align:center">匹配任意长度的任意字符</td>
+<td>Referer</td>
+<td>指明了当前请求的资源是从何处来的</td>
 </tr>
 <tr>
-<td style="text-align:center">\?</td>
-<td style="text-align:center">匹配其前面的字符0次或1次</td>
+<td>User-Agent</td>
+<td>HTTP客户端程序信息</td>
 </tr>
 <tr>
-<td style="text-align:center">\{m\}</td>
-<td style="text-align:center">匹配其前面的字符m次</td>
+<td>Accept</td>
+<td>用户代理可处理的媒体类型</td>
 </tr>
 <tr>
-<td style="text-align:center">\{m,n\}</td>
-<td style="text-align:center">匹配其前面的字符至少m次，最多n次</td>
+<td>Accept-Charset</td>
+<td>优先字符集</td>
 </tr>
 <tr>
-<td style="text-align:center">\{m,\}</td>
-<td style="text-align:center">匹配其前面的字符至少m次</td>
+<td>Accept-Encoding</td>
+<td>优先内容编码</td>
 </tr>
 <tr>
-<td style="text-align:center">\{0,n\}</td>
-<td style="text-align:center">匹配其前面的字符最多n次</td>
+<td>Accept-Language</td>
+<td>优先的自然语言</td>
 </tr>
 <tr>
-<td style="text-align:center">\+</td>
-<td style="text-align:center">匹配其前面的字符1次或无限次</td>
+<td>If-Modified-Since</td>
+<td>是否在指定的时间后修改过某资源</td>
+</tr>
+<tr>
+<td>If-None-Match</td>
+<td>本地缓存中存储的文档的ETag标签是否与服务器文档的Etag不匹配</td>
+</tr>
+<tr>
+<td>Authorization</td>
+<td>客户端提交服务端的认证数据，如账号密码</td>
+</tr>
+<tr>
+<td>Cookie/Cookie2</td>
+<td>客户端发送给服务端的身份标识</td>
+</tr>
+<tr>
+<td>Porxy-Authorization</td>
+<td>向代理服务器认证</td>
 </tr>
 </tbody>
 </table>
-<p>正则表达式默认为贪婪模式，即尽可能长的去匹配字符。</p>
-<p>扩展正则表达式中不需要转义符号<code>\</code>，另外还有<code>+</code>表示匹配其前面的字符至少一次。</p>
-<h2 id="位置锚定"><a href="#位置锚定" class="headerlink" title="位置锚定"></a>位置锚定</h2><p>位置锚定用于指定字符出现的位置</p>
-<p>行首行尾锚定</p>
+<p><strong>响应首部</strong>是服务端向客户端发送响应报文时使用的首部，补充了响应的信息</p>
 <table>
 <thead>
 <tr>
-<th style="text-align:center">元字符</th>
-<th style="text-align:center">功能描述</th>
+<th>响应首部</th>
+<th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align:center">^</td>
-<td style="text-align:center">锚定行首</td>
+<td>Age</td>
+<td>响应持续时间</td>
 </tr>
 <tr>
-<td style="text-align:center">$</td>
-<td style="text-align:center">锚定行尾</td>
+<td>Server</td>
+<td>HTTP服务程序的相关信息</td>
 </tr>
 <tr>
-<td style="text-align:center">^$</td>
-<td style="text-align:center">空白行</td>
+<td>Accept-Ranges</td>
+<td>针对当前资源服务器能够接受的范围类型</td>
+</tr>
+<tr>
+<td>Vary</td>
+<td>代理服务器缓存的管理信息</td>
+</tr>
+<tr>
+<td>Set-Cookie/Cookie2</td>
+<td>服务端向客户端发送的令牌</td>
+</tr>
+<tr>
+<td>WWW-Authentication</td>
+<td>服务端对客户端的认证信息</td>
 </tr>
 </tbody>
 </table>
-<p>单词位置锚定</p>
+<p><strong>实体首部</strong>针对请求报文和响应报文的实体部分使用的首部，补充了与实体有关的信息</p>
 <table>
 <thead>
 <tr>
-<th style="text-align:center">元字符</th>
-<th style="text-align:center">功能描述</th>
+<th>实体首部</th>
+<th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align:center">锚定词首</td>
-<td style="text-align:center">\&lt;char 或 \bchar</td>
+<td>Content-Location</td>
+<td>资源的新位置URI</td>
 </tr>
 <tr>
-<td style="text-align:center">锚定词尾</td>
-<td style="text-align:center">char\&gt; ho char\b</td>
+<td>Allow</td>
+<td>允许对此资源使用的请求方法</td>
+</tr>
+<tr>
+<td>Content-Encoding</td>
+<td>实体主体适用的编码方式</td>
+</tr>
+<tr>
+<td>Content-Language</td>
+<td>实体主体的自然语言</td>
+</tr>
+<tr>
+<td>Content-Length</td>
+<td>实体主体的大小（单位：字节）</td>
+</tr>
+<tr>
+<td>Content-Type</td>
+<td>实体主体的媒体类型</td>
+</tr>
+<tr>
+<td>ETag</td>
+<td>实体主体标签</td>
+</tr>
+<tr>
+<td>Expires</td>
+<td>实体主体过期的日期时间</td>
+</tr>
+<tr>
+<td>Last-Modified</td>
+<td>资源的最后修改日期</td>
 </tr>
 </tbody>
 </table>
-<p>基本和扩展正则表达式都支持位置锚定。</p>
-<h2 id="分组和引用"><a href="#分组和引用" class="headerlink" title="分组和引用"></a>分组和引用</h2><p>使用分组可以将匹配到的文本作为一个整体对待，分组使用<code>\(模式\)</code>。</p>
-<p>引用是对分组的字符串基于位置进行引用。如<code>\1</code>，后向引用， 引用前面的第一个左括号以及与之匹配的右括号中模式所匹配到的内容，类似的还有<code>\2</code>，<code>\3</code>。</p>
-<p>基本和扩展正则表达式都支持分组和引用。</p>
-<p>扩展正则表达式还支持或者操作。使用<code>|</code>表示或者，<code>a|b</code>表示ab有一个即可，<code>ac|bc</code>表示ac或者bc，如果想对一个字母使用或者，要使用<code>ab(x|y)c</code>。</p>
-<h2 id="练习"><a href="#练习" class="headerlink" title="练习"></a>练习</h2><p>用两种方查找/proc/meminfo文件中以大写或小写S开头的行</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">egrep "^(s|S)" /proc/meminfo</span><br><span class="line">grep "^[Ss]" /proc/meminfo</span><br><span class="line">grep -i "^s" /proc/meminfo</span><br></pre></td></tr></table></figure>
-<p>查找/etc/passwd文件中的一位数或两位数；</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">grep "\&lt;[0-9]\&#123;1,2\&#125;\&gt;" /etc/passwd</span><br><span class="line">egrep "\&lt;[0-9]|[0-9][0-9]\&gt;" /etc/passwd</span><br></pre></td></tr></table></figure>
-<p>查找/boot/grub/grub.conf中以至少一个空白字符开头的行；</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">grep "^[[:space:]]\&#123;1\&#125;.*" /boot/grub/grub.conf</span><br><span class="line">grep "^[[:space:]]\+" /boot/grub/grub.conf</span><br></pre></td></tr></table></figure>
-<p>查找/etc/rc.d/rc.sysinit文件中以#开头，后面跟至少一个空白字符，而后又有至少一个非空白字符的行；</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">grep "^#[[:space:]][^[:space:]].$" /etc/rc.d/rc.sysinit</span><br><span class="line">grep "^#[[:space:]]\+[^[:space:]]\+" /etc/rc.d/rc.sysinit</span><br></pre></td></tr></table></figure>
-<p>打出netstat -tan命令执行结果中以‘LISTEN’，后或跟空白字符结尾的行；</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">netstat -tan | grep "LISTEN[[:space:]].*"</span><br></pre></td></tr></table></figure>
-<p>后续还会更新遇到的题目…</p>
-<h2 id="推荐文章"><a href="#推荐文章" class="headerlink" title="推荐文章"></a>推荐文章</h2><p><a href="https://www.cnblogs.com/huxi/archive/2010/07/04/1771073.html" target="_blank" rel="noopener">Python正则表达式指南</a></p>
-<p><a href="https://www.jianshu.com/p/e7bb97218946" target="_blank" rel="noopener">知道这20个正则表达式，能让你少写1,000行代码</a></p>
+<h2 id="HTTP响应状态码"><a href="#HTTP响应状态码" class="headerlink" title="HTTP响应状态码"></a>HTTP响应状态码</h2><p>响应报文中的响应行由HTTP协议版本号、状态码和原因短语组成。原因短语是对响应状态码的简要解释。</p>
+<p>状态码分为5种类型，标记请求处理过程中发生的情况。</p>
+<table>
+<thead>
+<tr>
+<th>状态码</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>200</td>
+<td>成功，请求的所有数据通过响应报文的entity-body部分发送，简要描述为OK</td>
+</tr>
+<tr>
+<td>301</td>
+<td>请求URL指向的资源已被删除，在响应报文中通过首部Location指明资源所处位置。永久重定向</td>
+</tr>
+<tr>
+<td>302</td>
+<td>与301相似，在响应报文中通过location指明资源目前的临时位置，描述为Found。临时重定向</td>
+</tr>
+<tr>
+<td>304</td>
+<td>客户端发出条件式请求，但服务器上资源未曾发生改变，则以此状态码告知客户端，描述为Not MOdified</td>
+</tr>
+<tr>
+<td>401</td>
+<td>需要输入账号和密码认证后才能访问资源，简要描述为unauthorized</td>
+</tr>
+<tr>
+<td>403</td>
+<td>请求被禁止，简要描述为Forbidden</td>
+</tr>
+<tr>
+<td>404</td>
+<td>服务器无法找到客户端请求的资源，简要描述为Not Found</td>
+</tr>
+<tr>
+<td>405</td>
+<td>Method Not Allowed</td>
+</tr>
+<tr>
+<td>500</td>
+<td>服务器内部错误，简要描述为internal Server Error</td>
+</tr>
+<tr>
+<td>502</td>
+<td>代理服务器从后端服务器收到一条伪响应，简要描述为Bad Gateway</td>
+</tr>
+<tr>
+<td>503</td>
+<td>Service Unavailable</td>
+</tr>
+</tbody>
+</table>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>前面把关于HTTP协议中最基础的内容，包括一次HTTP通信的过程以及HTTP协议的报文结构，首部和状态码进行了归纳总结。</p>
 
 
                 <hr>
@@ -393,12 +471,12 @@
                 <ul class="pager">
                     
                         <li class="previous">
-                            <a href="/2017/12/31/TCP三次握手/" data-toggle="tooltip" data-placement="top" title="经典问题：TCP连接的建立和断开">&larr; Previous Post</a>
+                            <a href="/2018/03/10/Python-1/" data-toggle="tooltip" data-placement="top" title="Python-1">&larr; Previous Post</a>
                         </li>
                     
                     
                         <li class="next">
-                            <a href="/2017/12/24/Vim/" data-toggle="tooltip" data-placement="top" title="Vim 备忘录">Next Post &rarr;</a>
+                            <a href="/2018/01/26/Linux防火墙-iptables-netfilter/" data-toggle="tooltip" data-placement="top" title="Linux防火墙 iptables/netfilter">Next Post &rarr;</a>
                         </li>
                     
                 </ul>
@@ -415,20 +493,6 @@
 
             </div>
     <!-- Side Catalog Container -->
-        
-            <div class="
-                col-lg-2 col-lg-offset-0
-                visible-lg-block
-                sidebar-container
-                catalog-container">
-                <div class="side-catalog">
-                    <hr class="hidden-sm hidden-xs">
-                    <h5>
-                        <a class="catalog-toggle" href="#">CATALOG</a>
-                    </h5>
-                    <ul class="catalog-body"></ul>
-                </div>
-            </div>
         
 
     <!-- Sidebar Container -->
@@ -447,7 +511,7 @@
                        
                           <a class="tag" href="/tags/#基本功" title="基本功">基本功</a>
                         
-                          <a class="tag" href="/tags/#正则表达式" title="正则表达式">正则表达式</a>
+                          <a class="tag" href="/tags/#web" title="web">web</a>
                         
                     </div>
                 </section>
@@ -479,8 +543,8 @@
 <script type="text/javascript">
     /* * * CONFIGURATION VARIABLES * * */
     var disqus_shortname = "hexo-theme-huxblog";
-    var disqus_identifier = "https://simontage.github.io/2017/12/28/Regular-Expression/";
-    var disqus_url = "https://simontage.github.io/2017/12/28/Regular-Expression/";
+    var disqus_identifier = "https://simontage.github.io/2018/02/28/Http协议/";
+    var disqus_url = "https://simontage.github.io/2018/02/28/Http协议/";
 
     (function() {
         var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
@@ -657,50 +721,6 @@
 
 
 <!-- Side Catalog -->
-
-<script type="text/javascript">
-    function generateCatalog (selector) {
-        var P = $('div.post-container'),a,n,t,l,i,c;
-        a = P.find('h1,h2,h3,h4,h5,h6');
-        a.each(function () {
-            n = $(this).prop('tagName').toLowerCase();
-            i = "#"+$(this).prop('id');
-            t = $(this).text();
-            c = $('<a href="'+i+'" rel="nofollow">'+t+'</a>');
-            l = $('<li class="'+n+'_nav"></li>').append(c);
-            $(selector).append(l);
-        });
-        return true;    
-    }
-
-    generateCatalog(".catalog-body");
-
-    // toggle side catalog
-    $(".catalog-toggle").click((function(e){
-        e.preventDefault();
-        $('.side-catalog').toggleClass("fold")
-    }))
-
-    /*
-     * Doc: https://github.com/davist11/jQuery-One-Page-Nav
-     * Fork by Hux to support padding
-     */
-    async("/js/jquery.nav.js", function () {
-        $('.catalog-body').onePageNav({
-            currentClass: "active",
-            changeHash: !1,
-            easing: "swing",
-            filter: "",
-            scrollSpeed: 700,
-            scrollOffset: 0,
-            scrollThreshold: .2,
-            begin: null,
-            end: null,
-            scrollChange: null,
-            padding: 80
-        });
-    });
-</script>
 
 
 
