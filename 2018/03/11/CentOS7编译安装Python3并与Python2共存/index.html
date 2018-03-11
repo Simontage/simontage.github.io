@@ -13,11 +13,11 @@
 
     <title>
         
-          Web服务器-httpd - Manson的备忘录 | Manson&#39;s Notes
+          CentOS7编译安装Python3并与Python2共存 - Manson的备忘录 | Manson&#39;s Notes
         
     </title>
 
-    <link rel="canonical" href="https://simontage.github.io/2018/03/10/Web服务器-httpd/">
+    <link rel="canonical" href="https://simontage.github.io/2018/03/11/CentOS7编译安装Python3并与Python2共存/">
 
     <!-- Bootstrap Core CSS -->
     <link rel="stylesheet" href="/css/bootstrap.min.css">
@@ -155,7 +155,7 @@
 <!-- Post Header -->
 <style type="text/css">
     header.intro-header{
-        background-image: url('httpd.png')
+        background-image: url('/img/home-bg.jpg')
     }
 </style>
 <header class="intro-header" >
@@ -165,14 +165,12 @@
                 <div class="post-heading">
                     <div class="tags">
                         
-                          <a class="tag" href="/tags/#web" title="web">web</a>
-                        
                     </div>
-                    <h1>Web服务器-httpd</h1>
-                    <h2 class="subheading"></h2>
+                    <h1>CentOS7编译安装Python3并与Python2共存</h1>
+                    <h2 class="subheading">时候开始使用 Python3了</h2>
                     <span class="meta">
                         Posted by Manson on
-                        2018-03-10
+                        2018-03-11
                     </span>
                 </div>
             </div>
@@ -191,7 +189,12 @@
                 col-md-10 col-md-offset-1
                 post-container">
 
-                
+                <p>由于目前CentOS 7中还有一些包是依赖于python2的，如yum，因此在安装Python3时，尽量避免修改系统中Python2的相关设置。</p>
+<h2 id="安装编译环境和软件依赖关系"><a href="#安装编译环境和软件依赖关系" class="headerlink" title="安装编译环境和软件依赖关系"></a>安装编译环境和软件依赖关系</h2><p>安装 Python3时，使用源码编译安装，安装前要确保相关的开发工具包组以及相应依赖关系已经安装，如果没有安装好依赖关系，可能会导致安装完成后出现一些问题，如交互环境下按键出现的问题，因为缺少readline依赖等。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">yum groupinstall Development Tools</span><br><span class="line">yum -y install zlib zlib-devel</span><br><span class="line">yum -y install bzip2 bzip2-devel</span><br><span class="line">yum -y install ncurses ncurses-devel</span><br><span class="line">yum -y install readline readline-devel</span><br><span class="line">yum -y install openssl openssl-devel</span><br><span class="line">yum -y install openssl-static</span><br><span class="line">yum -y install xz lzma xz-devel</span><br><span class="line">yum -y install sqlite sqlite-devel</span><br><span class="line">yum -y install gdbm gdbm-devel</span><br><span class="line">yum -y install tk tk-devel</span><br><span class="line">yum -y install db4-devel libpcap-devel</span><br></pre></td></tr></table></figure>
+<h2 id="获取Python3源码"><a href="#获取Python3源码" class="headerlink" title="获取Python3源码"></a>获取Python3源码</h2><p>在 Python 官网下载源码（<a href="https://www.python.org/downloads/release/python-364/）并解压缩" target="_blank" rel="noopener">https://www.python.org/downloads/release/python-364/）并解压缩</a></p>
+<p><img src="./python_source_code.png" alt=""></p>
+
 
                 <hr>
 
@@ -199,13 +202,9 @@
 
                 <ul class="pager">
                     
-                        <li class="previous">
-                            <a href="/2018/03/11/CentOS7编译安装Python3并与Python2共存/" data-toggle="tooltip" data-placement="top" title="CentOS7编译安装Python3并与Python2共存">&larr; Previous Post</a>
-                        </li>
-                    
                     
                         <li class="next">
-                            <a href="/2018/03/10/Python-1/" data-toggle="tooltip" data-placement="top" title="Python-1">Next Post &rarr;</a>
+                            <a href="/2018/03/10/Web服务器-httpd/" data-toggle="tooltip" data-placement="top" title="Web服务器-httpd">Next Post &rarr;</a>
                         </li>
                     
                 </ul>
@@ -238,8 +237,6 @@
                     <h5><a href="/tags/">FEATURED TAGS</a></h5>
                     <div class="tags">
                        
-                          <a class="tag" href="/tags/#web" title="web">web</a>
-                        
                     </div>
                 </section>
                 
@@ -270,8 +267,8 @@
 <script type="text/javascript">
     /* * * CONFIGURATION VARIABLES * * */
     var disqus_shortname = "hexo-theme-huxblog";
-    var disqus_identifier = "https://simontage.github.io/2018/03/10/Web服务器-httpd/";
-    var disqus_url = "https://simontage.github.io/2018/03/10/Web服务器-httpd/";
+    var disqus_identifier = "https://simontage.github.io/2018/03/11/CentOS7编译安装Python3并与Python2共存/";
+    var disqus_url = "https://simontage.github.io/2018/03/11/CentOS7编译安装Python3并与Python2共存/";
 
     (function() {
         var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
