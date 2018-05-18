@@ -13,11 +13,11 @@
 
     <title>
         
-          CentOS7编译安装Python3并与Python2共存 - Manson的备忘录 | Manson&#39;s Notes
+          在CentOS 7上为网络接口分配静态IP地址 - Manson的备忘录 | Manson&#39;s Notes
         
     </title>
 
-    <link rel="canonical" href="https://simontage.github.io/2018/03/11/CentOS7编译安装Python3并与Python2共存/">
+    <link rel="canonical" href="https://simontage.github.io/2018/05/18/在CentOS-7上为网络接口分配静态IP地址/">
 
     <!-- Bootstrap Core CSS -->
     <link rel="stylesheet" href="/css/bootstrap.min.css">
@@ -155,7 +155,7 @@
 <!-- Post Header -->
 <style type="text/css">
     header.intro-header{
-        background-image: url('python-1-562x309@2x-op.png')
+        background-image: url('/img/home-bg.jpg')
     }
 </style>
 <header class="intro-header" >
@@ -165,14 +165,12 @@
                 <div class="post-heading">
                     <div class="tags">
                         
-                          <a class="tag" href="/tags/#python" title="python">python</a>
-                        
                     </div>
-                    <h1>CentOS7编译安装Python3并与Python2共存</h1>
-                    <h2 class="subheading">时候开始使用 Python3了</h2>
+                    <h1>在CentOS 7上为网络接口分配静态IP地址</h1>
+                    <h2 class="subheading"></h2>
                     <span class="meta">
                         Posted by Manson on
-                        2018-03-11
+                        2018-05-18
                     </span>
                 </div>
             </div>
@@ -191,22 +189,14 @@
                 col-md-10 col-md-offset-1
                 post-container">
 
-                <p>由于目前CentOS 7中还有一些包是依赖于python2的，如yum，因此在安装Python3时，尽量避免修改系统中Python2的相关设置。</p>
-<h2 id="安装编译环境和软件依赖关系"><a href="#安装编译环境和软件依赖关系" class="headerlink" title="安装编译环境和软件依赖关系"></a>安装编译环境和软件依赖关系</h2><p>安装 Python3时，使用源码编译安装，安装前要确保相关的开发工具包组以及相应依赖关系已经安装，如果没有安装好依赖关系，可能会导致安装完成后出现一些问题，如交互环境下按键出现的问题，因为缺少readline依赖等。</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">yum groupinstall Development Tools</span><br><span class="line">yum -y install zlib zlib-devel</span><br><span class="line">yum -y install bzip2 bzip2-devel</span><br><span class="line">yum -y install ncurses ncurses-devel</span><br><span class="line">yum -y install readline readline-devel</span><br><span class="line">yum -y install openssl openssl-devel</span><br><span class="line">yum -y install openssl-static</span><br><span class="line">yum -y install xz lzma xz-devel</span><br><span class="line">yum -y install sqlite sqlite-devel</span><br><span class="line">yum -y install gdbm gdbm-devel</span><br><span class="line">yum -y install tk tk-devel</span><br><span class="line">yum -y install db4-devel libpcap-devel</span><br></pre></td></tr></table></figure>
-<h2 id="获取Python3源码"><a href="#获取Python3源码" class="headerlink" title="获取Python3源码"></a>获取Python3源码</h2><p>在 Python 官网下载源码（<a href="https://www.python.org/downloads/release/python-364/" target="_blank" rel="noopener">https://www.python.org/downloads/release/python-364/</a>) 并解压缩</p>
-<p><img src="./python_source_code.png" alt=""></p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">wget https://www.python.org/ftp/python/3.6.4/Python-3.6.4.tgz</span><br><span class="line">tar -xzvf Python-3.6.4.tgz</span><br></pre></td></tr></table></figure>
-<h2 id="编译安装-Python3"><a href="#编译安装-Python3" class="headerlink" title="编译安装 Python3"></a>编译安装 Python3</h2><p>进入解压后的 python 源码目录，配置配置编译选项后进行编译安装</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">mkdir /usr/local/python3</span><br><span class="line">cd Python-3.6.4</span><br><span class="line">./configure --prefix=/usr/local/python3</span><br><span class="line">make &amp;&amp; make install</span><br></pre></td></tr></table></figure>
-<h2 id="建立-Python3-和-pip3-的软链接"><a href="#建立-Python3-和-pip3-的软链接" class="headerlink" title="建立 Python3 和 pip3 的软链接"></a>建立 Python3 和 pip3 的软链接</h2><figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ln -s <span class="regexp">/usr/</span>local<span class="regexp">/python3/</span>bin<span class="regexp">/python3 /u</span>sr<span class="regexp">/bin/</span>python3</span><br><span class="line">ln -s <span class="regexp">/usr/</span>local<span class="regexp">/python3/</span>bin<span class="regexp">/pip3 /u</span>sr<span class="regexp">/bin/</span>pip3</span><br></pre></td></tr></table></figure>
-<p>除了建立pip3的软连接外，本地系统内同时存在python2和3的版本的话，使用pip（或者其他类似的script文件夹中的脚本命令）命令，其所关联的python解释器版本可能并不是预期中的版本号。因此，可以直接先分别在两个pip所在的目录中使用命令，看看究竟是哪个pip不能使用。此外，可以直接指定python解释器的版本号，前提是你已经将python2,3进行了区分，使用如下类似命令进行安装<code>python3 -m pip install packagename</code></p>
-<h2 id="在-Python2环境下安装-virtualenv"><a href="#在-Python2环境下安装-virtualenv" class="headerlink" title="在 Python2环境下安装 virtualenv"></a>在 Python2环境下安装 virtualenv</h2><p>安装virtualenv之前需要安装pip(2)，pip的安装方法和升级方法在 <a href="https://pip.pypa.io/en/stable/installing/" target="_blank" rel="noopener">https://pip.pypa.io/en/stable/installing/</a> 上有详细说明，安装pip后，使用pip安装virtualenv：</p>
-<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip <span class="keyword">install</span> virtualenv</span><br></pre></td></tr></table></figure>
-<p>创建或指定一个目录（或子目录）用于部署virtualenv的虚拟环境，这里虚拟环境使用python3</p>
-<figure class="highlight vim"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">mkdir</span> Development/myproject</span><br><span class="line"><span class="keyword">cd</span> Development/myproject</span><br><span class="line">virtualenv venv -<span class="keyword">p</span> <span class="keyword">python3</span> --<span class="keyword">no</span>-site-packages</span><br></pre></td></tr></table></figure>
-<p>激活虚拟环境：在virtualenv 目录中使用<code>source venv/bin/activate</code></p>
-<p>退出虚拟环境：<code>deactivate</code></p>
+                <h2 id="相关服务"><a href="#相关服务" class="headerlink" title="相关服务"></a>相关服务</h2><p>在 CentOS 7中，网络管理服务(NetworkManager.service)是一个动态网络控制器和配置系统，并默认安装启用。</p>
+<p>通过<code>systemctl status NetworkManager</code>可以查看网络管理服务当前的运行状态；</p>
+<p>使用<code>nmcli dev status</code>查看接受网络管理器管理的网络接口，输出结果是 connected，表示该接口受网络管理器管理。</p>
+<h2 id="方法一：使用配置文件分配静态-IP-地址"><a href="#方法一：使用配置文件分配静态-IP-地址" class="headerlink" title="方法一：使用配置文件分配静态 IP 地址"></a>方法一：使用配置文件分配静态 IP 地址</h2><p>在<code>/etc/sysconfig/network-scripts</code>目录下查找要修改的网络接口配置文件，如果没有，自行创建。</p>
+<p>修改或添加配置文件中如下几个字段：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">BOOTPROTO=<span class="string">"static"</span><span class="comment">#使用静态IP地址</span></span><br><span class="line">IPADDR=192.168.1.14</span><br><span class="line">NETMASK=255.255.255.0</span><br><span class="line">NM_CONTROLLED=<span class="string">"no"</span><span class="comment">#该接口通过配置文件进行设置，不通过网络管理器管理</span></span><br><span class="line">ONBOOT=<span class="string">"yes"</span><span class="comment">#系统启动时开启该接口</span></span><br></pre></td></tr></table></figure>
+<p>保存文件后，重启网络服务<code>systemctl restart network</code></p>
+<h2 id="方法二：使用-nmtui-修改"><a href="#方法二：使用-nmtui-修改" class="headerlink" title="方法二：使用 nmtui 修改"></a>方法二：使用 nmtui 修改</h2><p>nmtui 是网络管理图形化文本配置工具，使用 nmtui 配置的前提是该网卡接受 NetworkManager 管理，因此在该网卡的配置文件中，NM_CONTROLLED应该配置为 yes。如果系统没有安装 nmtui，使用<code>yum install NetworkManager-tui</code>。使用 <code>nmtui</code>或 <code>nmtui eidt 接口</code>即可修改该接口的 IP 地址信息等。编辑完成后，重启网络服务。</p>
 
 
                 <hr>
@@ -215,13 +205,9 @@
 
                 <ul class="pager">
                     
-                        <li class="previous">
-                            <a href="/2018/03/14/Linux网络管理/" data-toggle="tooltip" data-placement="top" title="Linux网络管理">&larr; Previous Post</a>
-                        </li>
-                    
                     
                         <li class="next">
-                            <a href="/2018/03/10/Web服务器-httpd/" data-toggle="tooltip" data-placement="top" title="Web服务器-httpd">Next Post &rarr;</a>
+                            <a href="/2018/03/21/Python-2/" data-toggle="tooltip" data-placement="top" title="Python-2">Next Post &rarr;</a>
                         </li>
                     
                 </ul>
@@ -254,8 +240,6 @@
                     <h5><a href="/tags/">FEATURED TAGS</a></h5>
                     <div class="tags">
                        
-                          <a class="tag" href="/tags/#python" title="python">python</a>
-                        
                     </div>
                 </section>
                 
@@ -286,8 +270,8 @@
 <script type="text/javascript">
     /* * * CONFIGURATION VARIABLES * * */
     var disqus_shortname = "hexo-theme-huxblog";
-    var disqus_identifier = "https://simontage.github.io/2018/03/11/CentOS7编译安装Python3并与Python2共存/";
-    var disqus_url = "https://simontage.github.io/2018/03/11/CentOS7编译安装Python3并与Python2共存/";
+    var disqus_identifier = "https://simontage.github.io/2018/05/18/在CentOS-7上为网络接口分配静态IP地址/";
+    var disqus_url = "https://simontage.github.io/2018/05/18/在CentOS-7上为网络接口分配静态IP地址/";
 
     (function() {
         var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;

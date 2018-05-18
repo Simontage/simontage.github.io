@@ -191,7 +191,307 @@
                 col-md-10 col-md-offset-1
                 post-container">
 
-                
+                <h2 id="套接字"><a href="#套接字" class="headerlink" title="套接字"></a>套接字</h2><p>网络通信模型有两种，一个是OSI，一个是当前使用的TCP/IP模型。</p>
+<p><img src="./OSI_Vs_TCPIP_Model.png" alt=""></p>
+<p>在Linux系统中，物理层是通过硬件实现的，数据链路层是通过相关硬件的驱动程序实现的，网络层和传输层在内核中实现，应用层在用户空间实现。应用层侧重于不同程序实现的特有功能，TCP/IP的下三层更通用，重点是数据的传送。物理层提供设备到设备的通信，网络层提供主机到主机的通信，传输层为进程提供端到端的通信服务。传输层使用端口来区分各个进程，传输层常见的两个协议是TCP和UDP。</p>
+<p>网络通信实际上是两个进程之间的通信，套接字(Socket)是进程通信的一种方式，允许位于不同主机（或相同主机）的不同进程进行通信以达到数据交换的目的。套接字是进程间数据流的端点，以IP协议为通信基础的套接字称为网络套接字，以本地文件系统通信的套接字称为Unix Socket。</p>
+<p>套接字也对应用程序提供API以便于调用，最早的Socket API来自于BSD 4.2，</p>
+<p>套接字有三种类型，一种是以TCP为基础的SOCK_STREAM，一种是以UDP为基础的SOCK_DGRAM，还有一种直接以IP为基础的rawsocket。</p>
+<p>IANA（互联网号码分配局）将0-1023端口永久分配给固定的应用使用，叫做特权端口；1024-41951范围内的端口也是由IANA进行注册的端口，但要求不严格，可分配给开发者注册为某应用使用；41952之后的端口是客户端随机使用的端口，也叫做动态端口或私有端口，其范围由<code>/proc/sys/ipv4/ip_local_port_range</code>文件定义。</p>
+<p>客户端和服务端组成一组套接字，服务端使用固定的端口监听，客户端使用随机端口。</p>
+<p>根据所使用的地址不同，Socket Domain中Socket分为AF_INET、AF_INET6、AF_UNIX</p>
+<ul>
+<li>AF_INET：IPv4 socket Address Family</li>
+<li>AF_INET6：IPv6 socket Address Family</li>
+<li>AF_UNIX：同主机的不同进程通信</li>
+</ul>
+<p>上面三种Socket每类套接字都至少提供了两种Socket数据传输机制：流（TCP）和数据报（UDP）。流可以可靠地传递并且是面向连接的，而且是无边界的；数据报是不可靠地传递，报文有边界、无连接。</p>
+<p>与套接字相关的系统调用有：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">系统调用</th>
+<th style="text-align:center">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">socket()</td>
+<td style="text-align:center">创建套接字</td>
+</tr>
+<tr>
+<td style="text-align:center">bind()</td>
+<td style="text-align:center">绑定套接字</td>
+</tr>
+<tr>
+<td style="text-align:center">listen()</td>
+<td style="text-align:center">监听套接字</td>
+</tr>
+<tr>
+<td style="text-align:center">accept()</td>
+<td style="text-align:center">接受请求</td>
+</tr>
+<tr>
+<td style="text-align:center">connect()</td>
+<td style="text-align:center">请求连接建立</td>
+</tr>
+<tr>
+<td style="text-align:center">write()</td>
+<td style="text-align:center">发送</td>
+</tr>
+<tr>
+<td style="text-align:center">read()</td>
+<td style="text-align:center">接收</td>
+</tr>
+</tbody>
+</table>
+<h2 id="httpd的功能特性"><a href="#httpd的功能特性" class="headerlink" title="httpd的功能特性"></a>httpd的功能特性</h2><p>常见的web服务器程序有httpd、nginx、Lighttpd，还有一些应用程序服务器（APP Server），可以返回动态内容，如ISS、tomcat、jboss、resin、webshpere、weblogic、oc4j。</p>
+<p>英国Netcraft公司<a href="https://news.netcraft.com/archives/category/web-server-survey/" target="_blank" rel="noopener">官网</a>每月公布的关于网站数量和服务器市场份额的调研数据，截止2018年2月，httpd的市场占有率为27.45，排名第二。</p>
+<p><img src="web_survey201802.png" alt=""></p>
+<p>Apache HTTP Server目前的主流版本有httpd 2.4和httpd 2.2，在 CentOS 6 默认提供的版本是2.2，CentOS 7 默认提供的是2.4。</p>
+<p><strong>PV和UV</strong></p>
+<p>PV（page view）：</p>
+<p>UV（user view）：独立IP量</p>
+<p>httpd的功能特性：</p>
+<ol>
+<li>支持虚拟主机virtual host</li>
+<li>支持CGI（Commmon Gateway Interface，通用网关接口）</li>
+<li>支持反向代理</li>
+<li>支持负载均衡</li>
+<li>支持路径别名</li>
+<li>有丰富的用户认证机制</li>
+<li>支持第三方模块</li>
+</ol>
+<p>httpd有三个很重要的特点：高度模块化、DSO和MPM机制</p>
+<p><strong>模块化</strong>：由core和各种modules组成</p>
+<p><strong>DSO机制</strong>：Dynamic Shared Object，httpd支持模块的动态装卸载</p>
+<p><strong>MPM机制</strong>：Multipath-Processing Modules，多路处理模块，其并非是一个模块，而是一种机制</p>
+<p>HTTP三个MPM机制</p>
+<ul>
+<li><p>prefork MPM</p>
+<p>多进程模型，主进程负责接收请求但不处理请求，主进程生成多个子进程并对其进行回收等管理，每个子进程只有一个线程处理一个用户请求，即便当前没有用户请求，也会预先生成多个空闲进程，随时等待请求到达，并发请求最大不会超过1024个。</p>
+<p>缺点：一个进程占用较多的系统资源，消耗更多内存；对高并发场景支持较差。</p>
+<p>图</p>
+<p><img src="http://ww4.sinaimg.cn/mw690/aa213e02gw1ewdb2xlqn3j20em0ahmxi.jpg" alt=""></p>
+<p><a href="http://blog.jobbole.com/91920/" target="_blank" rel="noopener">http://blog.jobbole.com/91920/</a></p>
+</li>
+<li><p>worker MPM</p>
+<p>多进程和多线程混合模式，主进程fork若干子进程，每个子进程有多个线程</p>
+<p>多线程模型（一个进程生成多个线程，每个线程响应一个请求），每个线程相应一个请求。一个主进程生成多个子进程，，每个子进程生成多个线程，每个线程响应一个请求；线程比起进程会更轻量，因为线程通常会共享父进程的内存空间，因此，内存的占用会减少一些。在高并发的场景下，因为比起prefork有更多的可用线程，表现会更优秀一些。</p>
+<p>当仅使用多线程模型，如果一个线程异常会导致父进程连同其他子进程异常，为了稳定性，worker模块采用了多进程与多线程混合使用。</p>
+<p>优点：系统资源占用比prefork小，高并发能力比prefork好。</p>
+<p>缺点：必须考虑线程安全的问题，因为多个子线程是共享父进程的内存地址的。如果使用keep-alive的长连接方式，某个线程会一直被占据，也许中间几乎没有请求，需要一直等待到超时才会被释放。如果过多的线程，被这样占据，也会导致在高并发场景下的无服务线程可用。（该问题在prefork模式下，同样会发生）</p>
+<p>图</p>
+<p><img src="http://ww4.sinaimg.cn/mw690/aa213e02gw1ewdb2y6q5aj20fy0cft93.jpg" alt=""></p>
+</li>
+<li><p><a href="https://httpd.apache.org/docs/2.4/mod/event.html" target="_blank" rel="noopener">event MPM</a></p>
+<p>event是基于worker MPM的，区别在于它解决了keep-alive场景下，长期被占用的线程的资源浪费问题（某些线程因为被keep-alive，空挂在哪里等待，中间几乎没有请求过来，甚至等到超时）。event MPM中，会有一个专门的线程来管理这些keep-alive类型的线程，当有真实请求过来的时候，将请求传递给服务线程，执行完毕后，又允许它释放。这样增强了高并发场景下的请求处理能力。</p>
+<p>event MPM在遇到某些不兼容的模块时，会失效，将会回退到worker模式，一个工作线程处理一个请求。官方自带的模块，全部是支持event MPM的。</p>
+<p>event MPM需要在Linux内核版本2.6或更高才可以运行，因为需要系统对EPoll的支持。</p>
+<p>对于HTTPS连接，event MPM的运行模式仍然是类似worker的方式，线程会被一直占用，直到连接关闭。</p>
+<p><img src="http://ww1.sinaimg.cn/mw690/aa213e02gw1ewdb35653jj20ku0b4aax.jpg" alt=""></p>
+</li>
+</ul>
+<h2 id="httpd-2-2相关文件和功能配置"><a href="#httpd-2-2相关文件和功能配置" class="headerlink" title="httpd-2.2相关文件和功能配置"></a>httpd-2.2相关文件和功能配置</h2><p>在CentOS 6中，使用rpm包安装httpd-2.2的配置文件：</p>
+<p><img src="httpd_etc_file.png" alt=""></p>
+<p>主目录：/etc/httpd</p>
+<p>主配置文件：/etc/httpd/conf/httpd.conf</p>
+<p>补充配置文件：/etc/httpd/conf.d/</p>
+<p>服务脚本：/etc/rc.d/inint.d/httpd</p>
+<p>服务脚本的配置文件：/etc/sysconfig/httpd</p>
+<p>主程序：/usr/sbin/httpd | /usr/sbin/httpd.event | /usr/sbin/httpd.worker</p>
+<p>日志文件：/var/log/httpd/{access_log,error_log}</p>
+<p>文档根目录（DocRoot）：/var/www/html</p>
+<p>CGI目录：/var/www/cgi-bin</p>
+<p>模块文件：/usr/lib64/httpd/modules</p>
+<p>启动httpd服务时，会对当前的ip地址进行反向解析，如果反向解析的结果和当前的主机名不对应是会报错。实验中可以编辑<code>/etc/host</code>使ip地址和主机名对应。</p>
+<p>验证httpd服务是否在80端口监听<code>ss -tnlp</code></p>
+<p><img src="ss.png" alt=""></p>
+<p>httpd主进程的属主是root，工作进程的属主是普通用户apache，因为要在内核中注册使用小于1023的端口，只有管理员有权限。主进程不响应请求，由工作进程响应。</p>
+<p><img src="root_apache_user.png" alt=""></p>
+<p>httpd的主配置文件大致上由三个部分（section）组成，section2和section3不要同时使用</p>
+<p>section 1：Global Environment</p>
+<p>section 2：‘Main’ Server configuration，主机配置，仅提供一个站点</p>
+<p>section 3：Virtual Hosts，虚拟站点配置</p>
+<p>修改配置文件后，应该进行配置文件语法检测<code>service httpd configtest</code>或<code>httpd -t</code>，绝大多数的配置修改后，可以通过<code>service httpd reload</code>或<code>systemctl reload httpd</code>来生效，如果修改了监听端口的地址或端口，必须要重启服务才能生效。</p>
+<p>配置文件中的配置选项</p>
+<ol>
+<li><p><strong>修改监听IP和端口</strong></p>
+<figure class="highlight accesslog"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Listen <span class="string">[IP:]</span>PORT</span><br></pre></td></tr></table></figure>
+<p>省略IP表示监听本机所有IP；Listen可重复出现多次</p>
+</li>
+<li><p><strong>持久连接（Persistant Connection）</strong></p>
+<figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="attribute">KeepAlive</span> <span class="literal">Off</span>|<span class="literal">On</span></span><br><span class="line"><span class="attribute">MaxKeepAliveRequests</span> 100</span><br><span class="line"><span class="attribute">KeepAliveTimeout</span> 15</span><br></pre></td></tr></table></figure>
+<p>知道HTTP1.0中，一次连接只能传输一次HTTP请求，而KeepAlive参数用于支持HTTP1.1中一次连接多次传输功能，每个资源获取完成后服务端不会立即断开，而是继续等待此连接的请求。</p>
+<p>当启用持久连接功能后，需要设置MaxKeepAliveRequests和KeepAliveTimeout参数的值。这两个参数用来出发断开持久连接。</p>
+<p>MaxKeepAliveRequests设定一次持久连接可以进行的HTTP请求的最大连接数。值为0时，表示不限制资源请求数。</p>
+<p>KeepAliveTimeout用来设定一个连接的超时时长，在httpd-2.2中默认为100秒，在httpd-2.4中还支持毫秒级定义。</p>
+<p>开启持久连接后，对于并发访问较大的服务器，持久连接功能会使有些请求得不到响应。可以使用较短的持久连接时间来减少持久连接加高并发的影响。</p>
+</li>
+<li><p><strong>MPM设置</strong></p>
+<p>httpd-2.2不支持同时编译多个模块，在编译时只能选择一种MPM，RPM安装包中提供了3个二进制程序文件，分别实现了对MPM不同机制的支持。</p>
+<p>使用<code>ps -aux | grep httpd</code>查看当前运行的httpd的类型 ，默认运行的是/usr/sbin/httpd，使用的prefork。</p>
+<p>使用<code>httpd -l</code>查看编译的静态模块，使用<code>httpd -M</code>查看当前httpd加载的所有模块（静态编译模块+动态装载模块）。</p>
+<p>要更换httpd主程序，在脚本配置文件<code>/etc/sysconfig/httpd</code>中启用<code>HTTPD=/usr/sbin/httpd.worker</code>，重启后生效。 </p>
+<p>在httpd主配置文件中，使用<code>&lt;IfModule MODULE&gt;...&lt;/IfModule&gt;</code>判断运行的模块，当模块匹配，参数即生效。</p>
+<p>在httpd-2.2主要使用的MPM有两种，一个是prefork，另一个是worker。</p>
+<figure class="highlight lsl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">&lt;IfModule prefork.c&gt;</span><br><span class="line">StartServers       <span class="number">8</span>  默认启动的工作进程数</span><br><span class="line">MinSpareServers    <span class="number">5</span>  最少空闲进程数</span><br><span class="line">MaxSpareServers   <span class="number">20</span>  最大空闲进程数</span><br><span class="line">ServerLimit      <span class="number">256</span>  最大活动进程数</span><br><span class="line">MaxClients       <span class="number">256</span>  并发请求的最大数，不能大于ServerLimit</span><br><span class="line">MaxRequestsPerChild  <span class="number">4000</span>  #每个子进程在生命周期内所能服务的最大请求个数。达到指定的数值后杀死进程，重新生成新的进程，当然如果一个子进程在重复使用没有问题的情况下，可以将数值调大。</span><br><span class="line">&lt;/IfModule&gt;</span><br><span class="line">------------------------------</span><br><span class="line">&lt;IfModule worker.c&gt;</span><br><span class="line">StartServers         <span class="number">4</span>  启动的子进程数</span><br><span class="line">MaxClients         <span class="number">300</span>  并发请求的最大数</span><br><span class="line">MinSpareThreads     <span class="number">25</span>  最小空闲线程数</span><br><span class="line">MaxSpareThreads     <span class="number">75</span>  最大空闲线程数</span><br><span class="line">ThreadsPerChild     <span class="number">25</span>  每个进程的线程数，子进程在启动时建立这些线程后就不再建立新的线程了</span><br><span class="line">MaxRequestsPerChild  <span class="number">0</span>  每个子进程能够处理的最大请求数，<span class="number">0</span>表示不限制</span><br><span class="line">&lt;/IfModule&gt;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>DSO设置</strong></p>
+<p>DSO机制在配置文件中使用LoadModule指定加载模块，一般格式是：<code>LoadModule &lt;mod_name&gt; &lt;mod_path&gt;</code>。指定模块路径可以使用相对路径，相对路径指的是相对于httpd主目录（/etc/httpd）的路径。</p>
+<p>/etc/httpd/modules是一个符号链接指向模块目录。使用<code>httpd -M</code>可以查看所有加载的DSO模块以及非DSO模块。</p>
+</li>
+<li><p><strong>定义‘Main’ server的文档页面路径</strong></p>
+<figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="attribute"><span class="nomarkup">DocumentRoot</span></span> <span class="string">"/var/www/html"</span></span><br></pre></td></tr></table></figure>
+<p>DocumentRoot定义的路径为URL路径的起始位置，用户请求的URL就被映射到指定目录下的网页文件。</p>
+<p>这个目录下的子目录，以及使用符号连接指出的文件和目录都能被浏览器访问，只是要在URL上使用同样的相对目录名。</p>
+<p>符号连接虽然逻辑上位于根文档目录之下，但实际上可以位于计算机上的任意目录中，因此可以使客户程序能访问那些根文档目录之外的目录，这在增加了灵活性的同时但减少了安全性。Apache在目录的访问控制中提供了FollowSymLinks选项来打开或关闭支持符号连接的特性。</p>
+</li>
+<li><p><strong>站点访问控制</strong></p>
+<p>站点访问控制可以基于文件系统路径或URL路径，对访问资源进行控制</p>
+<p>文件系统路径的访问控制：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&lt;Directory <span class="string">""</span>&gt; <span class="xml"><span class="tag">&lt;/<span class="name">Directory</span>&gt;</span></span></span><br><span class="line">&lt;File <span class="string">""</span>&gt;<span class="xml"><span class="tag">&lt;/<span class="name">File</span>&gt;</span></span></span><br><span class="line">&lt;FileMatch <span class="string">""</span>&gt;<span class="xml"><span class="tag">&lt;/<span class="name">FileMatch</span>&gt;</span></span></span><br></pre></td></tr></table></figure>
+<p>URL路径的访问控制：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;Location <span class="string">""</span>&gt;<span class="xml"><span class="tag">&lt;/<span class="name">Location</span>&gt;</span></span></span><br></pre></td></tr></table></figure>
+<p>对于来源控制可以基于来源地址或账号进行控制。</p>
+</li>
+<li><p><strong>使用“Directory + 基于来源地址”实现访问控制</strong></p>
+<figure class="highlight mathematica"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&lt;<span class="keyword">Directory</span> /&gt;</span><br><span class="line">    <span class="keyword">Options</span> FollowSymLinks</span><br><span class="line">    AllowOverride <span class="keyword">None</span> #是否查找.htacess文件作为配置文件，如果设置为none,那么服务器将忽略.htacess文件，如果设置为<span class="keyword">All</span>,那么所有在.htaccess文件里有的指令都将被重写。</span><br><span class="line">&lt;/<span class="keyword">Directory</span>&gt;</span><br></pre></td></tr></table></figure>
+<p>使用\<directory "="" path="" to="" somewhere"\=""> \ ，可以对DocumentRoot下的目录进行属性的定义。也可以使用\<directory ~="" "regexpress"\=""> \，启用正则表达式，不过速度慢，也可以使用\<location "url"\="">\基于URL配置属性定义。如果某要配置其属性的URL能映射到某具体文件系统路径，建议使用Directory。</location></directory></directory></p>
+<p>(1)options：定义用户对此目录资源的访问选项，可以使用None或ALL，或Indexes，Includes，FollowSymLinks，SymLinksifOwnorMatch，ExecCGI，MultiViews的组合。</p>
+<p>| options              | 说明                                      |<br>| ——————– | ————————————— |<br>| Indexs               | 缺少指定的默认页面时，允许将目录中的所有文件以列表形式返回给用户。危险！    |<br>| FollowSysLinks       | 允许访问符号链接所指向的原始文件                        |<br>| None                 | 所有的选项都不启用                               |<br>| All                  | 启用所有选项                                  |<br>| ExecCGI              | 允许使用mod_cgi模块执行CGI脚本                    |<br>| Includes             | 允许使用mod_include模块实现服务器端包含(SSI)          |<br>| Multiviews           | 允许使用mod_negotiation实现内容协商               |<br>| SysLinksIfOwnerMatch | 在链接文件属主属组域原始文件的属主属组相同时，允许访问符号链接所指向的原始文件 |</p>
+<p>(2)基于来源地址的访问控制</p>
+<p>Order：检查次序，也就是设置默认访问策略。<code>Order allow,deny</code>表示默认策略为Deny，只有明确指定Allow的，才能访问，类似于白名单。</p>
+<p>Allow from：允许访问的来源地址（IP地址或网段）</p>
+<p>Deny from：拒绝访问的来源地址（IP地址或网段）</p>
+<p>二者都能匹配到或者都没有匹配到都以默认规则，即后者定义的行为。单个匹配到的，就按匹配的规则执行Deny或Allow</p>
+</li>
+<li><p><strong>定义默认主页面</strong></p>
+<figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">DirectoryIndex index<span class="selector-class">.html</span> index<span class="selector-class">.html</span><span class="selector-class">.var</span></span><br></pre></td></tr></table></figure>
+<p>设置多个主页，按照从左至右第一个能访问的页面</p>
+</li>
+<li><p><strong><a href="http://httpd.apache.org/docs/2.2/mod/mod_log_config.html#formats" target="_blank" rel="noopener">日志</a>设定</strong></p>
+<p>Apache web server中有两种日志：错误日志和访问日志</p>
+<figure class="highlight perl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">ErrorLog logs/error_log  错误日志文件位置</span><br><span class="line">LogLevel <span class="keyword">warn</span>  <span class="comment">#设定写入日志级别</span></span><br><span class="line">LogFormat <span class="string">"%h %l %u %t \"%r\" %&gt;s %b \"%&#123;Referer&#125;i\" \"%&#123;User-Agent&#125;i\""</span> combined</span><br><span class="line">LogFormat <span class="string">"%h %l %u %t \"%r\" %&gt;s %b"</span> common</span><br><span class="line">LogFormat <span class="string">"%&#123;Referer&#125;i -&gt; %U"</span> referer</span><br><span class="line">LogFormat <span class="string">"%&#123;User-agent&#125;i"</span> agent</span><br><span class="line">CustomLog logs/access_log combined  访问日志文件路径和日志格式</span><br></pre></td></tr></table></figure>
+<p>日志级别由低到高：debug-&gt;info-&gt;notice-&gt;warn-&gt;error-&gt;crit-&gt;alert-&gt;emerg</p>
+<p>CustomLog定义访问日志的文件路径和日志格式。定义好的日志格式，可以使用一个名称进行识别，使用CustomLog指定日志格式时使用定义的名称即可，默认使用的是combined。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">%</span><span class="bash">h：Remote Host客户端IP地址</span></span><br><span class="line"><span class="meta">%</span><span class="bash">l： Remote logname (from identd, <span class="keyword">if</span> supplied)，远程登录名，-表示为空</span></span><br><span class="line"><span class="meta">%</span><span class="bash">u:：Remote user,  (from auth; may be bogus <span class="keyword">if</span> <span class="built_in">return</span> status (%s) is 401)。认证时的远程用户名，-表示为空</span></span><br><span class="line"><span class="meta">%</span><span class="bash">t：Time the request was received (standard english format)，服务器收到请求的时间</span></span><br><span class="line"><span class="meta">%</span><span class="bash">r：First line of request，请求报文的首行信息(method url version)</span></span><br><span class="line"><span class="meta">%</span><span class="bash">&gt;s: 响应状态码</span></span><br><span class="line"><span class="meta">%</span><span class="bash">b: 响应报文的长度，单位是字节，不包括响应报文首部</span></span><br><span class="line"><span class="meta">%</span><span class="bash">&#123;Referer&#125;i：请求报文当中<span class="string">"referer"</span>首部的值；当前资源的访问入口，即从哪个页面中的超链接跳转而来的</span></span><br><span class="line"><span class="meta">%</span><span class="bash">&#123;Header_Name&#125;i：记录指定请求报文首部的内容</span></span><br><span class="line"><span class="meta">%</span><span class="bash">&#123;User-Agent&#125;i：请求报文当中<span class="string">"User-Agent"</span>首部的值；即发出请求用到的应用程序，通常是浏览器，也可是压力测试工具，或是爬虫工具</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>路径别名</strong></p>
+<p>使用alias定义URL映射的文件系统路径，可以访问不在DocumentRoot目录下的文件</p>
+<figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">alias</span> URL/ <span class="regexp">/path/to</span><span class="regexp">/dir/</span> <span class="comment">#斜线要对应，有则全有，无则全无</span></span><br><span class="line"><span class="keyword">alias</span> /bbs/ <span class="string">"/forum/htdocs"</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>设定默认字符集</strong></p>
+<figure class="highlight armasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">AddDefaultCharset </span>UTF-<span class="number">8</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>基于用户的访问控制</strong></p>
+<p>基于用户的访问控制，当客户端向服务端发起请求时，服务端会进行认证质询（WWW-Authentication），服务端返回状态码为401的响应报文，拒绝用户请求，并说明要求用户提供账号和密码（弹出表单）。</p>
+<p>客户端进行认证（Authorization），填入账号和密码，再次发送请求报文，认证通过，则服务器端发送响应资源。</p>
+<p><img src="security-httpBasicAuthentication.gif" alt=""></p>
+<p>用于认证的用户账号和密码使用的是虚拟账号，仅用于访问某服务时用到的认证标识。认证类型有两种，一种是basic认证，一种是digest认证。basic认证帐号和密码是明文发送的，digest认证将帐号密码hash编码后发送，但很多浏览器不支持digest认证，大部分浏览器使用的basic认证。目前这种HTTP认证方法不常用，常用的是应用程序自带的表单认证。在模块中是以auth_开头的模块，共有两个：</p>
+<ul>
+<li>认证提供者（authentication provider）：帐号和密码的存放位置，在模块中以authn_开头</li>
+<li>授权机制（Authorization）用来定义根据什么授权，在模块中以authz_开头</li>
+</ul>
+<p>需要用户认证后才能访问的路径称为安全域，每个安全域应该通过名称对其进行标识，并用于告知用户认证的原因。</p>
+<p><strong>示例：根据用户和组进行授权，基于文件的basic认证</strong></p>
+<p>（1）定义安全域</p>
+<figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&lt;Directory <span class="string">"/var/www/html/admin"</span>&gt;</span><br><span class="line">    Options None</span><br><span class="line">    AllowOverride AuthConfig        <span class="comment">#None也可以</span></span><br><span class="line">    AuthType Basic                  <span class="comment">#认证类型</span></span><br><span class="line">    AuthName <span class="string">"Private Area"</span>         <span class="comment">#质询时弹出窗口的提示信息(自定义文字)</span></span><br><span class="line">    AuthBasicProvider file          <span class="comment">#可省略，下面一条就说明了使用File</span></span><br><span class="line">    AuthUserFile “<span class="regexp">/etc/</span>httpd<span class="regexp">/conf.d/</span>.htpasswd” <span class="comment">#可由htpasswd命令生成</span></span><br><span class="line">    Require valid-user|tom,simon    <span class="comment">#valid-user允许账号文件中的所有用户登录访问</span></span><br><span class="line">&lt;<span class="regexp">/Directory&gt;</span></span><br></pre></td></tr></table></figure>
+<p>（2）提供账号和密码存储文件</p>
+<p>使用<code>htpasswd</code> 命令创建AuthUserFile，一般用法：<code>htpasswd [options] passwordfile username</code></p>
+<p>| 选项   | 说明                            |<br>| —- | —————————– |<br>| -c   | 自动创建passwordfile，仅在添加第一个用户时使用 |<br>| -m   | 使用md5加密用户密码                   |<br>| -s   | 使用sha-1加密用户密码                 |<br>| -D   | 删除指定用户                        |</p>
+<p><img src="htpasswd.png" alt=""></p>
+<p>文件创建完毕后，重载httpd<code>service httpd reload</code>后生效</p>
+<p>（3）如果用户较多，也可以使用基于组认证</p>
+<figure class="highlight applescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&lt;Directory <span class="string">"/var/www/html/admin"</span>&gt;</span><br><span class="line">    Options None</span><br><span class="line">    AllowOverride AuthConfig        <span class="comment">#None也可以</span></span><br><span class="line">    AuthType Basic                  <span class="comment">#认证类型</span></span><br><span class="line">    AuthName <span class="string">"Private Area"</span>         <span class="comment">#质询时弹出窗口的提示信息(自定义文字)</span></span><br><span class="line">    AuthBasicProvider <span class="built_in">file</span>          <span class="comment">#可省略，下面一条就说明了使用File</span></span><br><span class="line">    AuthUserFile <span class="string">"/etc/httpd/conf.d/.htpasswd"</span> </span><br><span class="line">    AuthGroupFile <span class="string">"/etc/httpd/conf.d/.htgroup"</span></span><br><span class="line">    Require webadmin GRP_Name       <span class="comment">#指定允许访问的组</span></span><br><span class="line">&lt;/Directory&gt;</span><br></pre></td></tr></table></figure>
+<p>用户和密码文件依然由<code>htpasswd</code>创建，组文件手动创建，每一行定义一个组：<code>GRP_Name: use1 use2 user3 ...</code></p>
+<p>基于用户和基于组的认证，在配置文件中出现一个即可。</p>
+</li>
+<li><p><strong>虚拟主机</strong></p>
+<p>httpd支持一个物理服务器支持多个站点，区分虚拟主机可以基于不同IP、不同端口或FQDN。</p>
+<ul>
+<li><p>基于IP：为每个虚拟主机准备至少一个IP地址</p>
+</li>
+<li><p>基于端口：为每个虚拟主机准备至少一个专用端口。基本不会使用此方法</p>
+</li>
+<li><p>基于FQDN：为每个虚拟主机准备至少一个专用的hostname。（在请求首部中可以得到请求的Hostname）</p>
+<p>同一物理主机上的多个虚拟主机，对于上述的区分方法，不同的虚拟机可以使用不同的区分方法。</p>
+</li>
+</ul>
+<p>一般情况下，虚拟主机不要和Main server混用，所以，要使用虚拟主机，先禁用中心主机（<code>注释DocumentRoot</code>）。</p>
+<p>在启用虚拟主机的情况下，如果客户端请求的URL是物理主机的ip地址，httpd则会将配置文件的第一虚拟主机返回给客户端，当然可以定义默认的虚拟主机。三种虚拟主机的方法可以混合使用，大部分用在中心主机的配置都可以在虚拟主机中使用</p>
+<p><strong>基于IP地址区分虚拟主机</strong></p>
+<figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">&lt;VirtualHost 172.16.100.6:80&gt;</span></span><br><span class="line">    <span class="attribute"><span class="nomarkup">ServerName</span></span> web1.jsp.com</span><br><span class="line">    <span class="attribute"><span class="nomarkup">DocumentRoot</span></span> <span class="string">"/vhosts/web1/htdocs"</span></span><br><span class="line">    <span class="section">&lt;Directory " "&gt;</span></span><br><span class="line">        <span class="attribute"><span class="nomarkup">options</span></span> None</span><br><span class="line">    <span class="section">&lt;/Directory&gt;</span></span><br><span class="line">    <span class="attribute">CustomLog</span> ...... combined</span><br><span class="line"><span class="section">&lt;/VirtualHost&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="section">&lt;VirtualHost 172.16.100.7:80&gt;</span></span><br><span class="line">    <span class="attribute"><span class="nomarkup">ServerName</span></span> web2.jsp.com</span><br><span class="line">    <span class="attribute"><span class="nomarkup">DocumentRoot</span></span> <span class="string">"/vhosts/web2/htdocs"</span></span><br><span class="line">    <span class="attribute">CustomLog</span> ...... combined</span><br><span class="line"><span class="section">&lt;/VirtualHost&gt;</span></span><br></pre></td></tr></table></figure>
+<p><strong>基于端口区分虚拟主机</strong></p>
+<figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">&lt;VirtualHost 172.16.100.7:80&gt;</span></span><br><span class="line">    <span class="attribute"><span class="nomarkup">ServerName</span></span> web2.jsp.com</span><br><span class="line">    <span class="attribute"><span class="nomarkup">DocumentRoot</span></span> <span class="string">"/vhosts/web2/htdocs"</span></span><br><span class="line">    <span class="attribute">CustomLog</span> ...... combined</span><br><span class="line"><span class="section">&lt;/VirtualHost&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="section">&lt;VirtualHost 172.16.100.7:8080&gt;</span></span><br><span class="line">    <span class="attribute"><span class="nomarkup">ServerName</span></span> web3.jsp.com</span><br><span class="line">    <span class="attribute"><span class="nomarkup">DocumentRoot</span></span> <span class="string">"/vhosts/web3/htdocs"</span></span><br><span class="line">    <span class="attribute">CustomLog</span> ...... combined</span><br><span class="line"><span class="section">&lt;/VirtualHost&gt;</span></span><br></pre></td></tr></table></figure>
+<p><strong>基于FQDN区分虚拟主机</strong></p>
+<p>在httpd-2.2中，使用FQDN方式的虚拟主机，要在配置文件中将<code>NameVirtualHost *：80</code>启用，并且虚拟主机的定义格式与NameVirtualHost的格式保持一致</p>
+<figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="attribute">NameVirtualHost</span> 172.16.100.6:80</span><br><span class="line"><span class="section">&lt;VirtualHost 172.16.100.6:80&gt;</span></span><br><span class="line">    <span class="attribute"><span class="nomarkup">ServerName</span></span> web1.jsp.com</span><br><span class="line">    <span class="attribute"><span class="nomarkup">DocumentRoot</span></span> <span class="string">"/vhosts/web1/htdocs"</span></span><br><span class="line">    <span class="attribute">CustomLog</span> ...... combined</span><br><span class="line"><span class="section">&lt;/VirtualHost&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="section">&lt;VirtualHost 172.16.100.6:80&gt;</span></span><br><span class="line">    <span class="attribute"><span class="nomarkup">ServerName</span></span> web2.jsp.com</span><br><span class="line">    <span class="attribute"><span class="nomarkup">DocumentRoot</span></span> <span class="string">"/vhosts/web2/htdocs"</span></span><br><span class="line">    <span class="attribute">CustomLog</span> ...... combined</span><br><span class="line"><span class="section">&lt;/VirtualHost&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="section">&lt;VirtualHost 172.16.100.6:80&gt;</span></span><br><span class="line">    <span class="attribute"><span class="nomarkup">ServerName</span></span> web3.jsp.com</span><br><span class="line">    <span class="attribute"><span class="nomarkup">DocumentRoot</span></span> <span class="string">"/vhosts/web3/htdocs"</span></span><br><span class="line">    <span class="attribute">CustomLog</span> ...... combined</span><br><span class="line"><span class="section">&lt;/VirtualHost&gt;</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>httpd的状态页面</strong></p>
+<p>status页面可以通过web页面进行显示当前web服务器的请求响应信息等，status只能使用Location进行定义，因为status在文件系统中没有文件。</p>
+<p>在apache中有很多处理器，当文件被调用时，apache在内部的表现形式，一般来说，每种类型都有其隐式处理器。status页面信息需要指定处理器，需要加载模块status_mod，显示定义使用的处理器SetHandler</p>
+<figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">&lt;Location /server-status&gt;</span></span><br><span class="line">   <span class="attribute"><span class="nomarkup">SetHandler</span></span> server-status</span><br><span class="line">   <span class="attribute"><span class="nomarkup">Order</span></span> deny,allow</span><br><span class="line">   <span class="attribute"><span class="nomarkup">Deny</span></span> from <span class="literal">all</span></span><br><span class="line">   <span class="attribute"><span class="nomarkup">Allow</span></span> from 192.168.2</span><br><span class="line"><span class="section">&lt;/Location&gt;</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>页面压缩</strong></p>
+<p>使用mod_deflate模块压缩页面可以优化传输速度，在httpd-2.2中默认启用。压缩要有一个过滤器，来指定压缩文件类型。</p>
+<p>页面压缩的适用场景</p>
+<ul>
+<li>页面压缩节约带宽，但是额外消耗CPU，同时，较老的浏览器可能不支持</li>
+<li>压缩适用于压缩的文件，比如文件文本</li>
+</ul>
+<p>如果在httpd的主配置文件中，没有关于输出过滤器的配置，可以在/etc/httpd/conf.d/目录下建立一个配置文件deflate.conf：</p>
+<figure class="highlight applescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">SetOutputFilter DEFLATE <span class="comment">#启动输出过滤器为deflate</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># mod_deflate configuration</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Restrict compression to these MIME types #对那些格式的文档进行压缩</span></span><br><span class="line">AddOutputFilterByType DEFLATE <span class="built_in">text</span>/plain </span><br><span class="line">AddOutputFilterByType DEFLATE <span class="built_in">text</span>/html</span><br><span class="line">AddOutputFilterByType DEFLATE <span class="built_in">application</span>/xhtml+xml</span><br><span class="line">AddOutputFilterByType DEFLATE <span class="built_in">text</span>/xml</span><br><span class="line">AddOutputFilterByType DEFLATE <span class="built_in">application</span>/xml</span><br><span class="line">AddOutputFilterByType DEFLATE <span class="built_in">application</span>/x-javascript</span><br><span class="line">AddOutputFilterByType DEFLATE <span class="built_in">text</span>/javascript</span><br><span class="line">AddOutputFilterByType DEFLATE <span class="built_in">text</span>/css</span><br><span class="line"></span><br><span class="line"><span class="comment"># Level of compression (Highest 9 - Lowest 1) #定义压缩比</span></span><br><span class="line">DeflateCompressionLevel <span class="number">9</span></span><br><span class="line"> </span><br><span class="line"><span class="comment"># Netscape 4.x has some problems. #指定不使用压缩的浏览器</span></span><br><span class="line">BrowserMatch ^Mozilla/<span class="number">4</span> gzip-only-<span class="built_in">text</span>/html</span><br><span class="line"> </span><br><span class="line"><span class="comment"># Netscape 4.06-4.08 have some more problems</span></span><br><span class="line">BrowserMatch ^Mozilla/<span class="number">4</span>\<span class="number">.0</span>[<span class="number">678</span>] no-gzip</span><br><span class="line"> </span><br><span class="line"><span class="comment"># MSIE masquerades as Netscape, but it is fine</span></span><br><span class="line">BrowserMatch \bMSI[E] !no-gzip !gzip-only-<span class="built_in">text</span>/html</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>HTTPS（http over tls）</strong></p>
+<p>http是明文传输的，要加密传输报文，需要借助于ssl/tls，对内容进行加密。使用ssl/tls后，URL的方案使用<a href="https://，监听在tcp/443端口。http是文本协议，https是二进制格式的协议，数据加密后是二进制编码。ssl会话是基于ip地址的，单IP主机，仅可以使用一个https虚拟主机。httpd基于mod_ssl模块实现对ssl的支持。" target="_blank" rel="noopener">https://，监听在tcp/443端口。http是文本协议，https是二进制格式的协议，数据加密后是二进制编码。ssl会话是基于ip地址的，单IP主机，仅可以使用一个https虚拟主机。httpd基于mod_ssl模块实现对ssl的支持。</a></p>
+<p><strong>SSL会话的简要过程</strong></p>
+<p>(1)客户端发送可供选择的加密方式，并向服务器请求证书</p>
+<p>(2)服务器端选定加密方式并连同证书一同发送给客户端</p>
+<p>(3)客户端证书验证</p>
+<p>​    如果信任给服务端签发证书的CA：</p>
+<p>​        a.验证证书来源的合法性：用CA的公钥解密证书上的数字签名</p>
+<p>​        b.验证证书内容的合法性：完整性验证</p>
+<p>​        c.验证证书的有效期</p>
+<p>​        d.检查证书是否被吊销</p>
+<p>​        e.证书中拥有者的名字与访问的目标主机是否一致</p>
+<p>(4)客户端生成临时会话密钥(对称密钥)，并使用服务端公钥加密此数据发送给服务器，完成密钥交换</p>
+<p>(5)服务端用接收到的会话密钥加密用户请求的资源，响应给客户端</p>
+<p><strong>示例：配置httpd支持https</strong></p>
+<p>(1)为服务器申请证书</p>
+<p>1.1创建CA</p>
+<p>1.2服务器创建证书签署请求</p>
+<p>1.3CA签证</p>
+<p>(2)配置httpd支持使用ssl以及使用证书</p>
+<figure class="highlight vim"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">yum -<span class="keyword">y</span> install mod_ssl</span><br><span class="line"><span class="keyword">vim</span> /etc/httpd/<span class="keyword">conf</span>.d/ssl.<span class="keyword">conf</span></span><br><span class="line">	DocumentRoot</span><br><span class="line">	ServerName</span><br><span class="line">	SSLCertificateFile</span><br><span class="line">	SSLCertificateKeyFile</span><br></pre></td></tr></table></figure>
+<p>(3)测试基于https访问相应主机</p>
+<figure class="highlight accesslog"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">openssl s_client <span class="string">[-connect host:port]</span> <span class="string">[-cert filename]</span> <span class="string">[-CApath directory]</span> <span class="string">[-CAfile filename]</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>httpd自带的工具程序</strong></p>
+<p>htpasswd：basic认证基于文件的实现，管理用户和密码文件</p>
+<p>apachectl：httpd自带的服务控制工具，支持start，stop</p>
+<p>apxs：有httpd-devel包提供，扩展httpd使用第三方模块工具</p>
+<p>rotatelogs：日志滚动工具</p>
+<p>suexec：访问某些有特殊权限配置的资源时，临时切换至指定用户运行</p>
+<p>ab：apache benchmark</p>
+</li>
+<li><p><strong>http压力测试工具</strong></p>
+</li>
+</ol>
+<h2 id="httpd-2-4相关文件和功能配置"><a href="#httpd-2-4相关文件和功能配置" class="headerlink" title="httpd-2.4相关文件和功能配置"></a>httpd-2.4相关文件和功能配置</h2><p>在CentOS 7中，默认提供的apache版本是httpd-2.4。httpd-2.4支持了一些新的特性：</p>
+<p>(1)MPM支持运行时动态装载；以模块形式按需装载</p>
+<p>(2)支持event MPM</p>
+<p>(3)支持异步读写</p>
+<p>(4)支持每模块及每个目录分别使用各自的日志级别</p>
+<p>(5)每请求配置</p>
+<p>(6)增强版的表达式分析器</p>
+<p>(7)支持毫秒级的KeepAlive timeout</p>
+<p>(8)基于FQDN的虚拟主机不再需要NameVirtualHost指令</p>
+<p>(9)支持用户自定义变量</p>
+<p>新模块：mod_proxy_fcgi、mod_ratelimit、mod_request、mod_remoteip。</p>
+<p>httpd-2.4修改了某些配置方法，不再支持使用Order定义基于IP的访问控制，统一使用require。</p>
+<h2 id="CentOS-6-编译安装httpd-2-4"><a href="#CentOS-6-编译安装httpd-2-4" class="headerlink" title="CentOS 6 编译安装httpd-2.4"></a>CentOS 6 编译安装httpd-2.4</h2><h2 id="IO模型"><a href="#IO模型" class="headerlink" title="IO模型"></a>IO模型</h2><p><img src="select-and-poll-functions-5-728.jpg" alt=""></p>
+
 
                 <hr>
 
