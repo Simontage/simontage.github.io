@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="keyword"  content="">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>
+        
+          OSPF协议 - Manson的备忘录 | Manson&#39;s Notes
+        
+    </title>
+
+    <link rel="canonical" href="https://simontage.github.io/2018/05/18/OSPF协议/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/hux-blog.min.css">
+
+    <!-- Pygments Highlight CSS -->
+    <link rel="stylesheet" href="/css/highlight.css">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="https://cdn.staticfile.org/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- Hux Delete, sad but pending in China
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
+    css'>
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+</head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Manson&#39;s Notes</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'s height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+
+                    
+
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/about/">About</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/archives/">Archives</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/tags/">Tags</a>
+                        </li>
+                        
+                    
+                    
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Main Content -->
+    
+<!-- Image to hack wechat -->
+<!-- <img src="https://simontage.github.io/img/icon_wechat.png" width="0" height="0"> -->
+<!-- <img src="{{ site.baseurl }}/{% if page.header-img %}{{ page.header-img }}{% else %}{{ site.header-img }}{% endif %}" width="0" height="0"> -->
+
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        background-image: url('/img/home-bg.jpg')
+    }
+</style>
+<header class="intro-header" >
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                    </div>
+                    <h1>OSPF协议</h1>
+                    <h2 class="subheading"></h2>
+                    <span class="meta">
+                        Posted by Manson on
+                        2018-05-18
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+    <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+                <h2 id="基本的-OSPF-信息"><a href="#基本的-OSPF-信息" class="headerlink" title="基本的 OSPF 信息"></a>基本的 OSPF 信息</h2><p>OSPF(Open Shortest Path First，开放最短路径优先)协议属于 IGP 协议，属于链路状态协议，支持无类路由协议(VLSM 和 CIDR)，封装在 IP 包，协议号89，使用的组播地址为224.0.0.5和224.0.0.6。</p>
+<p>OSPF使用 SPF 算法，同一区域的每台路由器都有一致的链路状态数据库，OSPF 协议通过交换 LSA（链路状态通告）来交换路由和拓扑等信息，收到的 LSA 保存在 LSDB(链路状态数据库)，根据 LSDB 中的拓扑信息计算出以自己为根到达目标路径的最优路径（COST 值最小的路径），并写入路由表。OSPF 协议维护三张表，分别是：邻居表、LSDB、路由表。</p>
+<blockquote>
+<p>链路状态协议和距离矢量协议对比</p>
+<ol>
+<li>链路状态协议有更多的关于本网络的信息</li>
+<li>链路状态协议的每个路由器都有本网络的全网拓扑</li>
+<li>链路状态协议是层次化的设计</li>
+</ol>
+<p>层次化设计(划分区域)的好处</p>
+<ol>
+<li>通过使用路由汇总，减少路由条目</li>
+<li>本地拓扑变化只影响本区域。只有当所有明细路由消失，汇总路由才会消失</li>
+<li>某类 LSA 只在一个区域中传播</li>
+</ol>
+</blockquote>
+<p>OSPF 是层次化的设计，分为骨干区域(又称area0或传输区域)和非骨干区域，非骨干区域应该与骨干区域直接相连。OSPF 是接口敏感协议，即区域划分是按网络接口所处区域划分的，而不是整个路由器所处的区域。根据所处区域的不同，路由器(接口)有几个不同的角色：</p>
+<ul>
+<li>骨干路由器：路由器有一个及以上接口属于 Area0</li>
+<li>ABR：区域边界路由器，路由器有两个接口属于两个不同的区域，ABR 将其它区域连接至 Area0</li>
+<li>ASBR：自主系统边界路由器，对其他协议重分布到 OSPF 域内的路由器</li>
+</ul>
+<h2 id="OSPF-邻居和邻接"><a href="#OSPF-邻居和邻接" class="headerlink" title="OSPF 邻居和邻接"></a>OSPF 邻居和邻接</h2><ul>
+<li>邻居关系：两路由交换了 Hello包并且指定参数相匹配，就是邻居关系</li>
+<li>邻接关系：两路由器交换 LSA，就是邻接关系，路由和拓扑信息即 LSA 的传送仅发生在邻接关系的路由器之间</li>
+</ul>
+<p>OSPF 建立邻居或邻接关系取决于运行OSPF协议所属的网络类型：</p>
+<ol>
+<li><p>点到点网络</p>
+<p>点到点网络，如串口相连的网络，最后邻居关系都会建立邻接关系</p>
+</li>
+<li><p>MA 网络</p>
+<p>MA 网络又分为 BMA(如以太网等支持广播和组播的网络)和 NBMA 网络(如帧中继FR)。</p>
+<p>在 BMA 网络中，为了避免因各个路由器相互之间建立邻接关系而产生大量重复 LSA，定义一个指定路由器（<strong>DR</strong>）和备份指定路由器（<strong>BDR</strong>），网络中各路由器（DROther）仅与 DR 和 BDR 建立邻接关系（full），DROther 之间的状态位2way 状态。</p>
+</li>
+</ol>
+<p>LSA（链路状态通告）有两种更新方式，一个是触发更新，即当拓扑发生改变时，发送 LSA；另一个是周期更新，更新周期为<strong>30min</strong>。LSA 的老化时间为<strong>60min</strong>，当60min 后都没有收到 LSA，则删除 LSDB 中该 LSA。对比 LSA 使用序列号，序列号是4Byte的16进制数，范围是0x80000001-0x7FFFFFFF。</p>
+<p><img src="/Users/simon/blog/source/_posts/OSPF协议/ospf-lsa-lsdb-flooding.png" alt=""></p>
+<p><strong>OSPF 报文</strong></p>
+<table>
+<thead>
+<tr>
+<th>报文类型</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1- hello</td>
+<td>发送相关信息，建立邻居、选举 DR 和 BDR 等</td>
+</tr>
+<tr>
+<td>2- DBD</td>
+<td>相当于 LSA 摘要，通过序列号隐式确认</td>
+</tr>
+<tr>
+<td>3- LSR</td>
+<td>由 LSU 确认</td>
+</tr>
+<tr>
+<td>4- LSU</td>
+<td>由 LSACK 显式确认</td>
+</tr>
+<tr>
+<td>5- LSACK</td>
+<td>确认 LSU</td>
+</tr>
+</tbody>
+</table>
+<p>OSPF 报文格式</p>
+<p><img src="/Users/simon/blog/source/_posts/OSPF协议/ospf_header.png" alt=""></p>
+<table>
+<thead>
+<tr>
+<th>报文格式</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>version</td>
+<td>v2用于 ipv4，v3用于 ipv6</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>共有5种类型，1-5分别是 hello、DBD、LSR、LSU、LSACK</td>
+</tr>
+<tr>
+<td>Packet Length</td>
+<td>包长度</td>
+</tr>
+<tr>
+<td>Router ID</td>
+<td>路由器 ID</td>
+</tr>
+<tr>
+<td>Area ID</td>
+<td>区域 ID</td>
+</tr>
+<tr>
+<td>CheckSUM</td>
+<td>校验和</td>
+</tr>
+<tr>
+<td>Authentication type</td>
+<td>认证类型</td>
+</tr>
+<tr>
+<td>Authentication</td>
+<td>认证信息</td>
+</tr>
+</tbody>
+</table>
+<p>Router ID 选举方式（优先级由高到低）：</p>
+<ol>
+<li>手工指定（任意和唯一）</li>
+<li>环回口中最大的 IP 地址</li>
+<li>物理接口中最大的 IP 地址</li>
+</ol>
+<p>OSPF hello packet</p>
+<p><img src="/Users/simon/blog/source/_posts/OSPF协议/ospf-adj-hello-encap.png" alt=""></p>
+<p>建立邻居至少在 hello 包中有4个选项要匹配：</p>
+<ol>
+<li><p>hello 和 dead interval</p>
+<p>hello 时间间隔根据网络不同有<strong>10s</strong>和<strong>30s</strong> 两种，dead interval 为<strong>4倍 hello</strong> </p>
+</li>
+<li><p>相同的 Area ID</p>
+</li>
+<li><p>相同的认证类型和认证信息</p>
+</li>
+<li><p>相同的 stub 标识</p>
+</li>
+</ol>
+<p>另外要建立邻居，也需要相同的 MTU</p>
+<p><strong>OSPF 邻接建立过程</strong></p>
+<p><img src="/Users/simon/blog/source/_posts/OSPF协议/OSPF_state.png" alt=""></p>
+<table>
+<thead>
+<tr>
+<th>状态</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Init</td>
+<td>发送 hello 包后，转为 init 状态</td>
+</tr>
+<tr>
+<td>2way</td>
+<td>收到 hello 包，包含自己的 router id</td>
+</tr>
+<tr>
+<td>Exstart</td>
+<td>交换 first DBD，主从选举，选择优先发送 DBD的一方</td>
+</tr>
+<tr>
+<td>Exchange</td>
+<td>交换 DBD</td>
+</tr>
+<tr>
+<td>Loading</td>
+<td>LSR/LSU</td>
+</tr>
+<tr>
+<td>Full</td>
+<td>LSDB同步完成</td>
+</tr>
+</tbody>
+</table>
+<p>再用文字描述一遍这个过程：</p>
+<p>实验一：相同区域 OSPF的配置</p>
+<hr>
+<p><img src="/Users/simon/blog/source/_posts/OSPF协议/实验一.png" alt=""></p>
+<p>IOU1与 IOU2运行 OSPF，各自进程号为110，进程号本地有效，手动指定 router id，区域同为 Area0，宣告本地物理接口，和环回口。</p>
+<p>以IOU1为例：</p>
+<figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">IOU1<span class="selector-id">#conf</span> t</span><br><span class="line"><span class="function"><span class="title">IOU1</span><span class="params">(config)</span></span><span class="selector-id">#int</span> lo0</span><br><span class="line"><span class="function"><span class="title">IOU1</span><span class="params">(config-if)</span></span><span class="selector-id">#ip</span> addr <span class="number">1.1</span>.<span class="number">1.1</span> <span class="number">255.255</span>.<span class="number">255.0</span></span><br><span class="line"><span class="function"><span class="title">IOU1</span><span class="params">(config-if)</span></span><span class="selector-id">#int</span> s2/<span class="number">0</span></span><br><span class="line"><span class="function"><span class="title">IOU1</span><span class="params">(config-if)</span></span><span class="selector-id">#ip</span> addr <span class="number">12.1</span>.<span class="number">1.1</span> <span class="number">255.255</span>.<span class="number">255.0</span></span><br><span class="line"><span class="function"><span class="title">IOU1</span><span class="params">(config-if)</span></span><span class="selector-id">#no</span> shu</span><br><span class="line"><span class="function"><span class="title">IOU1</span><span class="params">(config)</span></span><span class="selector-id">#router</span> ospf <span class="number">110</span>       #指定本地 OSPF 进程的进程号</span><br><span class="line"><span class="function"><span class="title">IOU1</span><span class="params">(config-router)</span></span><span class="selector-id">#router-id</span> <span class="number">1.1</span>.<span class="number">1.1</span> #手动指定 router id</span><br><span class="line"><span class="function"><span class="title">IOU1</span><span class="params">(config-router)</span></span><span class="selector-id">#network</span> <span class="number">12.1</span>.<span class="number">1.0</span> <span class="number">0.0</span>.<span class="number">0.255</span> area <span class="number">0</span></span><br><span class="line"><span class="function"><span class="title">IOU1</span><span class="params">(config-router)</span></span><span class="selector-id">#network</span> <span class="number">1.1</span>.<span class="number">1.1</span> <span class="number">0.0</span>.<span class="number">0.255</span> <span class="selector-tag">a</span> <span class="number">0</span></span><br><span class="line"><span class="function"><span class="title">IOU1</span><span class="params">(config-router)</span></span>#exit</span><br><span class="line"><span class="function"><span class="title">IOU1</span><span class="params">(config)</span></span><span class="selector-id">#do</span> show ip route</span><br><span class="line">      <span class="number">1.0</span>.<span class="number">0.0</span>/<span class="number">8</span> is variably subnetted, <span class="number">2</span> subnets, <span class="number">2</span> masks</span><br><span class="line">C        <span class="number">1.1</span>.<span class="number">1.0</span>/<span class="number">24</span> is directly connected, Loopback0</span><br><span class="line">L        <span class="number">1.1</span>.<span class="number">1.1</span>/<span class="number">32</span> is directly connected, Loopback0</span><br><span class="line">      <span class="number">2.0</span>.<span class="number">0.0</span>/<span class="number">32</span> is subnetted, <span class="number">1</span> subnets</span><br><span class="line">O        <span class="number">2.2</span>.<span class="number">2.2</span> [<span class="number">110</span>/<span class="number">65</span>] via <span class="number">12.1</span>.<span class="number">1.2</span>, <span class="number">00</span>:<span class="number">06</span>:<span class="number">13</span>, Serial2/<span class="number">0</span></span><br><span class="line">      <span class="number">12.0</span>.<span class="number">0.0</span>/<span class="number">8</span> is variably subnetted, <span class="number">2</span> subnets, <span class="number">2</span> masks</span><br><span class="line">C        <span class="number">12.1</span>.<span class="number">1.0</span>/<span class="number">24</span> is directly connected, Serial2/<span class="number">0</span></span><br><span class="line">L        <span class="number">12.1</span>.<span class="number">1.1</span>/<span class="number">32</span> is directly connected, Serial2/<span class="number">0</span></span><br></pre></td></tr></table></figure>
+<p> 在设定 OSPF 接口所处区域时，有两种表示方法，一个是用10进制表示，如0、1、256等，一个是用点分十进制表示，如0.0.0.0、0.0.0.1、0.0.1.0， 点分十进制换算成二进制后仍然可以转换位10进制表示。</p>
+<p>为了更好的观察 OSPF 邻接建立过程，可以开启 debug：<code>debug ip ospf pa</code>和<code>debug ip ospf adj</code>，但是生产欢迎不应该随意开启 debug，关闭 debug 使用<code>undebug all</code></p>
+<p>检查 OSPF 的命令：</p>
+<ul>
+<li><p>show ip ospf interface：查看哪些接口宣告进 OSPF</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">Loopback0 is up, line protocol is up</span><br><span class="line">  Internet<span class="built_in"> Address </span>1.1.1.1/24,<span class="built_in"> Area </span>0, Attached via<span class="built_in"> Network </span>Statement</span><br><span class="line">  Process ID 110, Router ID 1.1.1.1,<span class="built_in"> Network Type </span>LOOPBACK, Cost: 1</span><br><span class="line">  Topology-MTID    Cost    Disabled    Shutdown      Topology Name</span><br><span class="line">        0           1         <span class="literal">no</span>          <span class="literal">no</span>            Base</span><br><span class="line">  Loopback<span class="built_in"> interface </span>is treated as a stub Host</span><br><span class="line">Serial2/0 is up, line protocol is up</span><br><span class="line">  Internet<span class="built_in"> Address </span>12.1.1.1/24,<span class="built_in"> Area </span>0, Attached via<span class="built_in"> Network </span>Statement</span><br><span class="line">  Process ID 110, Router ID 1.1.1.1,<span class="built_in"> Network Type </span>POINT_TO_POINT, Cost: 64</span><br><span class="line">  Topology-MTID    Cost    Disabled    Shutdown      Topology Name</span><br><span class="line">        0           64        <span class="literal">no</span>          <span class="literal">no</span>            Base</span><br><span class="line">  Transmit Delay is 1 sec, State POINT_TO_POINT</span><br><span class="line">  Timer intervals configured, Hello 10, Dead 40, Wait 40, Retransmit 5</span><br><span class="line">    oob-resync timeout 40</span><br><span class="line">    Hello due <span class="keyword">in</span> 00:00:03</span><br><span class="line">  Supports Link-local Signaling (LLS)</span><br><span class="line">  Cisco NSF helper support enabled</span><br><span class="line">  IETF NSF helper support enabled</span><br><span class="line">  Index 1/1, flood<span class="built_in"> queue </span>length 0</span><br><span class="line">  Next 0x0(0)/0x0(0)</span><br><span class="line">  Last flood scan length is 1, maximum is 1</span><br><span class="line">  Last flood scan time is 0 msec, maximum is 0 msec</span><br><span class="line"> <span class="built_in"> Neighbor </span>Count is 1, Adjacent<span class="built_in"> neighbor </span>count is 1</span><br><span class="line">    Adjacent with<span class="built_in"> neighbor </span>2.2.2.2</span><br><span class="line">  Suppress hello <span class="keyword">for</span> 0 neighbor(s)</span><br></pre></td></tr></table></figure>
+<p>回显显示该接口关于 OSPF 的详细信息，如接口的Cost 值、网络类型、区域信息、进程号、router id等</p>
+<blockquote>
+<p>Cost 值计算：</p>
+<p>Cost 值=10^8^/接口带宽BW(bps)，Cost 值与接口带宽成反比，接口带宽越大，Cost 值越小，Cost 值最小值为1。</p>
+<p>10Mbps 接口的 Cost 值=10^8^/10*10^6^=10</p>
+<p>串口 Cost 值=10^8^/1.544*10^6^=64</p>
+<p>环回口 Cost 值=10^8^/8000000=1，在 IOU2查看1.1.1.1的 Cost 值就是路由入接口的 Cost 值累加：64+1=65</p>
+<p>查看接口带宽：show interface lo0回显中的 BW 字段</p>
+</blockquote>
+</li>
+<li><p>show ip ospf interface brief：查看宣告 OSPF 接口的简要信息</p>
+</li>
+<li><p>show ip ospf nei：查看 OSPF邻居</p>
+</li>
+<li><p>show run lo0：查看环回口配置</p>
+</li>
+</ul>
+<p>在 OSPF 中，通告环回口进入 OSPF，无论配置多少位掩码，收到的都是32位路由，因为当学到的是一个网络的话，发送到目标网络实际不存在的主机的数据包，经过中间多个路由器转发，到目标相应网段后，才会被丢弃，浪费了中间的计算资源，如果是32位路由，发送到不存在目标主机，会在本机即丢弃。如eigrp 的路由是2.2.2.0/24，ospf的路由是2.2.2.2/32，当发送一个数据包给2.2.2.3时，eigrp 会一条一条转发，到目标网络后才会丢弃，而 ospf 会在当前路由器就把数据包丢弃。</p>
+<p>还原环回口真实掩码信息的方法是将环回口的网络类型修改为 p2p 网络：</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">IOU1(config)#int lo0</span><br><span class="line">IOU1(config-if)#ip<span class="built_in"> ospf network </span>point-to-p</span><br></pre></td></tr></table></figure>
+<p>修改 Hello 时间的方法：</p>
+<p>串口的默认 hello 时间为10s，dead 时间是4倍 hello</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">IOU1(config)#<span class="keyword">in</span> s2/0</span><br><span class="line">IOU1(config-if)#ip<span class="built_in"> ospf </span>hello-interval 6 #还原默认使用 <span class="literal">no</span><span class="built_in"> ip ospf </span>hello </span><br><span class="line">IOU1(config-if)#exit</span><br></pre></td></tr></table></figure>
+<p><strong>MA 网络中 DR 和 BDR 选举</strong></p>
+<p>OSPF 通过组播地址区分 hello 包发送的是 DR/BDR还是 DROther，DR 和 BDR监听的组播地址是224.0.0.6，DROther 监听的组播地址是224.0.0.5，当网络中选举出 DR 和 BDR 后，DROther 向224.0.0.6发送 Hello 包。点到点网络只发送到224.0.0.5</p>
+<p>DR/BDR 选举：</p>
+<ol>
+<li>优先级较大的路由器接口，默认为1，范围是0-255，0表示不参加 DR/BDR 选举</li>
+<li>较大的 router id</li>
+</ol>
+<p>DR/BDR 的特性：</p>
+<ol>
+<li>稳定性：DR 和 BDR 不具有抢占性，因此第一个和第二启动的路由器，会选举出 DR 和 BDR，即使后面有优先级更大的路由器（接口）都不会变成 DR 或 BDR；</li>
+<li>当 DR 发生故障时，BDR 会变成 DR，其余路由器重新选举 BDR；</li>
+<li>DR/BDR/DROther 都是属于接口的概念；</li>
+<li>不同网段会分别选举 DR 和 BDR。</li>
+</ol>
+<p>实验二：DR 和 BDR选举</p>
+<hr>
+<p><img src="/Users/simon/blog/source/_posts/OSPF协议/实验2-1.png" alt="不同网段分别选举 DR/BDR"></p>
+<ul>
+<li><p>仅有 IOU1和 IOU2 时，</p>
+<ol>
+<li>接口 ip ospf pri 0，IOU1和 IOU 2不建立邻居关系</li>
+<li>IOU1接口优先级为0，IOU2为1，IOU2成为 DR，该多路访问网络没有 BDR</li>
+<li>IOU1和 IOU2恢复默认接口优先级，  先启动 IOU1再启动2，一般情况下 IOU2应该是 DR，但如果 IOU1先配置，并且 IOU2 在 IOU1配置后的40s 后才配置，那么这时候即使 IOU2的 router id 大，IOU1已经成为 DR。原因是因为 Wait Timer 等待计时器，这个计时器是在选取 DR 和 BDR 之前，路由器等待邻居路由器的 Hello 数据包通告 DR 和 BDR等时长。即收集候选人信息的时长。因此只要IOU2在40S 后才配置，IOU1就抢夺 DR 的身份。在 IOU1中重启 OSPF 进程clear ip ospf process后，IOU2变成 DR。</li>
+</ol>
+</li>
+<li>新增 IOU5时，将 IOU5的接口优先级设置为7（int e0/3;ip ospf pri 7），DR 和 BDR 仍然不会改变，如果 BDR故障，则重新选举 BDR，不影响 DR。DR 故障，BDR 变成 DR，其余路由器选举 BDR。<h2 id="LSA类型"><a href="#LSA类型" class="headerlink" title="LSA类型"></a>LSA类型</h2></li>
+</ul>
+<p>常见的 LSA 有1、2、3、5、4和7类，从三方面分析 LSA：传播范围、通告者和LSA内容。</p>
+<p>LSDB 中简要信息：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">LSA 类型</th>
+<th style="text-align:center">Link ID</th>
+<th style="text-align:center">ADV Router</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">1 Router LSA（o）</td>
+<td style="text-align:center">Router ID</td>
+<td style="text-align:center">Router ID</td>
+</tr>
+<tr>
+<td style="text-align:center">2 Net LSA</td>
+<td style="text-align:center">DR 物理接口 IP 地址</td>
+<td style="text-align:center">DR Router ID</td>
+</tr>
+<tr>
+<td style="text-align:center">3 Summary LSA（o IA）</td>
+<td style="text-align:center">域间路由(一定要先看区域)</td>
+<td style="text-align:center">路由穿越到本区域的ABR Router ID</td>
+</tr>
+<tr>
+<td style="text-align:center">4 Summay ASB LSA</td>
+<td style="text-align:center">ASBR Router ID</td>
+<td style="text-align:center">路由穿越到本区域的ABR Router ID</td>
+</tr>
+<tr>
+<td style="text-align:center">5 External LSA（o E2）</td>
+<td style="text-align:center">域外路由</td>
+<td style="text-align:center">ASBR Router ID</td>
+</tr>
+<tr>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+</tr>
+<tr>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+</tr>
+</tbody>
+</table>
+<h3 id="LSA-1-Router-LSA"><a href="#LSA-1-Router-LSA" class="headerlink" title="LSA-1 Router LSA"></a>LSA-1 Router LSA</h3><ul>
+<li>传播范围：本区域，不能穿过 ABR</li>
+<li>通告者：每台 OSPF 路由器</li>
+<li><p>通告内容：①拓扑信息（直连链路信息）和②路由</p>
+<p> <img src="/Users/simon/blog/source/_posts/OSPF协议/实验3-lsa1.png" alt=""> </p>
+</li>
+</ul>
+<p>在 R1上查看 LSDB摘要信息：<code>show ip ospf database</code>，查看 LSDB，首先关注的是区域，然后查看相应的 LSA 类型，1类 LSA 又称为 Router LSA。显示LSA1的详细信息使用 <code>show ip ospf database router</code></p>
+<h3 id="LSA-2-Network-LSA"><a href="#LSA-2-Network-LSA" class="headerlink" title="LSA-2 Network LSA"></a>LSA-2 Network LSA</h3><p>2类 LSA 仅出现在MA 网络中</p>
+<ul>
+<li>传播范围：本区域，不能穿越 ABR</li>
+<li>通告者：DR</li>
+<li>通告内容：①拓扑信息(描述本 MA 网络中 OSPF 路由器的个数)和② MA 网络的掩码信息</li>
+</ul>
+<p><img src="/Users/simon/blog/source/_posts/OSPF协议/实验3-lsa2-1.png" alt=""></p>
+<p>查看二类 LSA 的详细信息：<code>show ip ospf database network</code></p>
+<p>R7收到100.1.1.0/24的路由是通过 LSA1和 LSA2的结合学习到的，LSA1提供网络信息和 Metric，LSA2提供掩码信息。</p>
+<h3 id="LSA-3-Summary-LSA"><a href="#LSA-3-Summary-LSA" class="headerlink" title="LSA-3 Summary LSA"></a>LSA-3 Summary LSA</h3><ul>
+<li>传播范围：整个 OSPF 域</li>
+<li>通告者：ABR</li>
+<li>通告信息：(域间)路由</li>
+</ul>
+<p><img src="/Users/simon/blog/source/_posts/OSPF协议/实验3-lsa3.png" alt=""></p>
+<p>查看三类 LSA 的详细信息：<code>show ip ospf database summary</code></p>
+<p>需要注意的是，查看 LSDB 时，应该先留意区域，然后再查看相应类型的 LSA，三类 LSA 传递的是域间路由，宣告者时ABR，当域间路由穿越一个区域时，宣告这改为该区域 ABR 的 router id。</p>
+<h3 id="LSA-5-External-LSA"><a href="#LSA-5-External-LSA" class="headerlink" title="LSA-5 External LSA"></a>LSA-5 External LSA</h3><ul>
+<li>传播范围：整个 OSPF 域</li>
+<li>通告者：ASBR</li>
+<li>通告信息：(域外)路由</li>
+</ul>
+<p><img src="/Users/simon/blog/source/_posts/OSPF协议/实验3-lsa5.png" alt=""></p>
+<p>仅运行了两种协议的路由器并不能称为 ASBR，只有进行路由协议重发布后，有5类 LSA 产出的路由器才能称为 ASBR。</p>
+<p>需要注意的是，5类 LSA 不属于任何区域，并且区域传输过程中，宣告者不改变，一直都是 ASBR 。</p>
+<p>在 R2 上运行<code>show ip ospf border-routers</code>，可以查看区域中的 ABR 和 ASBR，没做重发布前，R2只能看到 R1是 ABR，并没有 ASBR。</p>
+<p>把 RiP 重发布到 OSPF：</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">R3(config-router)#router<span class="built_in"> ospf </span>110</span><br><span class="line">R3(config-router)#redistribute<span class="built_in"> rip </span>subnets</span><br></pre></td></tr></table></figure>
+<p>在 R2上再次查看，就发现已经存在 ASBR 路由器。本OSPF 区域的所有路由器都已经学到了外部协议的路由，在路由表中标识为默认位 O E2。</p>
+<p><strong>OE1 与 OE2的区别</strong></p>
+<p>域外路由默认是 E2类型，域外路由Cost 值不累加，在本区域的每台路由器 Cost 值相同，使用的是标准的 seed cost 值，重分布到 OSPF 的 seed cost默认是20。</p>
+<p>E2类型没有办法体现路径的真实开销，一般在重分布时，会将路由类型修改的 E1，方法是在ASBR上重分布时使用：<code>redistribute rip subnets metric-type 1</code>。</p>
+<h3 id="LSA-4-Summary-ASB-LSA"><a href="#LSA-4-Summary-ASB-LSA" class="headerlink" title="LSA-4 Summary ASB LSA"></a>LSA-4 Summary ASB LSA</h3><p>因为5类 LSA 在区域传播过程中，宣告者始终保持不变，一直都是 ASBR，那么除了 ASBR 所在的区域知道 ASBR 的位置，其他区域的 OSPF 路由器并不能知道 ASBR 所在位置，因此4类LSA 辅助其他区域 OSPF 路由器找到ASBR 的位置。 </p>
+<ul>
+<li>传播范围：除ASBR 所在区域的所有区域</li>
+<li>通告者：穿越到本区域的ABR</li>
+<li>通告信息：ASBR的位置</li>
+</ul>
+<p><img src="/Users/simon/blog/source/_posts/OSPF协议/实验3-lsa5.png" alt=""></p>
+<p>在 R2中，Area 0 的数据库中有4类 LSA，在 Area 2的数据库中没有4类 LSA，因为在 area2中，通过1类 LSA （有 AS Boundary Router标记）就可以找到 ASBR。</p>
+<p>总结一下，包含路由信息的 LSA 有1类 LSA域内路由、3类 LSA 域间路由、5类 LSA 域外路由</p>
+<h2 id="配置-OSPF"><a href="#配置-OSPF" class="headerlink" title="配置 OSPF"></a>配置 OSPF</h2><h3 id="修改-COST-值和参考带宽"><a href="#修改-COST-值和参考带宽" class="headerlink" title="修改 COST 值和参考带宽"></a>修改 COST 值和参考带宽</h3><p>修改 cost 值，在接口下使用<code>ip ospf Cost (1-65535)</code>，路由的 cost 值是路由流向入接口 Cost 值的累加。</p>
+<p>修改计算 Cost 值的参考带宽，因为当接口超过了100M 时，百兆以太网（100Mbps）和千兆以太网（1000Mbps）Cost 值都是1，路由的 Cost 值无法衡量路径真实开销。</p>
+<p>OSPF进程下，auto-cost reference-bandwidth 1-4294967，单位是 Mbps（10^6^），默认值为100，将参考带宽改为10^9^，应该设置的是数值1000。</p>
+<h3 id="启用-LSDB-负载保护"><a href="#启用-LSDB-负载保护" class="headerlink" title="启用 LSDB 负载保护"></a>启用 LSDB 负载保护</h3><p>过载保护功能在IOS-12.4之后才支持，路由器性能不足以处理大量的路由，当超过承受的 LSA 数量时，会发生告警或重置邻居，默认重置邻居。</p>
+<p>过载保护限制设置的 LSA 数量指的是非本机产生的 LSA，如进程下 max-lsa 4，表示当收到非本机的 LSA 数量超过3时，发出告警或重置邻居，因为阀值默认为设置 LSA 数量的75%，重置邻居的时间默认时5分钟。关于 OSPF 的信息查看，使用<code>show ip ospf</code></p>
+<h3 id="路由汇总"><a href="#路由汇总" class="headerlink" title="路由汇总"></a>路由汇总</h3><p>路由汇总的好处：</p>
+<ol>
+<li>减少路由表条目</li>
+<li>拓扑变化只影响本区域</li>
+<li>减少3类 LSA 和5类 LSA 泛洪</li>
+</ol>
+<p>路由汇总的特性：</p>
+<ol>
+<li>路由汇总有两种类型，一个是基于接口的路由汇总，一个是基于进程的路由汇总</li>
+<li>汇总路由在路由表中下一跳指向空接口</li>
+<li>当全部明细路由消失，汇总路由消失</li>
+<li>汇总路由的 Cost 值选取明细路由中 Cost 值最小的路由</li>
+</ol>
+<p>OSPF 没有域内路由汇总，因为在域内的每台路由器都有本区域的拓扑，路由汇总的是域间路由和域外路由。</p>
+<p><img src="/Users/simon/blog/source/_posts/OSPF协议/实验3-lsa5.png" alt=""></p>
+<p><strong>域间路由汇总（本区域所有 ABR 都要配置）：</strong></p>
+<p>在 R1上新建4个环回口，地址分别是202.96.16.1/24、202.96.17.1/24、202.96.18.1/24、202.96.19.1/24，宣告进 OSPF Area 0区域。</p>
+<p>域间路由汇总应该在 ABR 上做，R1和 R2都要做域间路由汇总，如果仅在 R1上做路由汇总，area1收到的是汇总路由，而 area 2仍然收到明细路由。</p>
+<p>OSPF 的路由汇总在 OSPF 进程下配置</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">R1(config-router)#router<span class="built_in"> ospf </span>110</span><br><span class="line">R1(config-router)#area 0 range 202.96.16.0 255.255.252.0</span><br></pre></td></tr></table></figure>
+<p>汇总路由后还有三个选项：</p>
+<ul>
+<li>advertise：汇总路由并通告，并抑制明细路由</li>
+<li>cost：指定汇总路由的 Cost 值</li>
+<li>not-advertise：聚合路由但不通告，用来做过滤</li>
+</ul>
+<p>R4收到一条汇总路由<code>O IA  202.96.16.0/22 [110/65] via 14.1.1.1</code></p>
+<p><strong>域外路由汇总</strong></p>
+<p>在 R5上新建2个环回口，地址分别是198.8.8.5/24、198.8.9.5/24，并通告在 RIP 中，查看环回口宣告情况：<code>show  ip protocol</code>。</p>
+<p>域外路由汇总在 ASBR 上配置，OSPF 进程下：</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">R3(config-router)#summary-address 198.8.8.0 255.255.254.0</span><br><span class="line">R2#show<span class="built_in"> ip route </span>198.8.8.0</span><br><span class="line">Routing entry <span class="keyword">for</span> 198.8.8.0/23, supernet #证明支持超网，CIDR</span><br><span class="line">  Known via <span class="string">"ospf 110"</span>, distance 110, metric 84,<span class="built_in"> type </span>extern 1</span><br><span class="line">  Last update <span class="keyword">from</span> 23.1.1.3 on Serial2/3, 00:02:03 ago</span><br><span class="line"> <span class="built_in"> Routing </span>Descriptor Blocks:</span><br><span class="line">  * 23.1.1.3, <span class="keyword">from</span> 93.3.3.3, 00:02:03 ago, via Serial2/3</span><br><span class="line">     <span class="built_in"> Route </span>metric is 84, traffic share count is 1</span><br></pre></td></tr></table></figure>
+<p>域外汇总三个选项：</p>
+<ul>
+<li>not-advertise：汇总但不通告</li>
+<li>nssa-only： </li>
+<li>tag：对汇总路由打标记，其他路由器基于标记进行后续配置，仅有5类路由有此选项</li>
+</ul>
+<p>###向 OSPF 区域注入默认路由</p>
+<p>下发默认路由的命令一般格式：在进程下，<code>default-information originate</code>。</p>
+<p><img src="/Users/simon/blog/source/_posts/OSPF协议/默认路由图示.png" alt=""></p>
+<p>图中，R2、R3、R4要访问 Internet，都需要一条路由，在 R1要下放默认路由，R2、3、4都能学到默认路由。</p>
+<p>要使用下发默认路由的命令，要确保本地已经有默认路由0.0.0.0（ip route 0.0.0.0 0.0.0.0 e/0），其他路由器收到默认路由的类型是5类 LSA，Cost 值为1。</p>
+<p>当 R2是使用动态路由协议连接 Internet，那么R2也无法使用默认路由，但是仍然要把访问 Internet 的数据包吸引到 R2，只需要在注入默认路由的命令后，增加参数 always。</p>
+<ul>
+<li>always：即使本地没有默认路由，也强行发送默认路由信息</li>
+<li>metric：seed metric 值默认为1，修改此值可以做链路备份和选路</li>
+<li>metric-type：OE1或 OE2</li>
+</ul>
+<h3 id="OSPF-特殊区域"><a href="#OSPF-特殊区域" class="headerlink" title="OSPF 特殊区域"></a>OSPF 特殊区域</h3>
+
+                <hr>
+
+                
+
+                <ul class="pager">
+                    
+                        <li class="previous">
+                            <a href="/2018/06/11/使用-Python-读写-Excel-文件/" data-toggle="tooltip" data-placement="top" title="使用 Python 读写 Excel 文件">&larr; Previous Post</a>
+                        </li>
+                    
+                    
+                        <li class="next">
+                            <a href="/2018/05/18/在CentOS-7上为网络接口分配静态IP地址/" data-toggle="tooltip" data-placement="top" title="在CentOS 7上为网络接口分配静态IP地址">Next Post &rarr;</a>
+                        </li>
+                    
+                </ul>
+
+                
+
+                
+                <!-- disqus 评论框 start -->
+                <div class="comment">
+                    <div id="disqus_thread" class="disqus-thread"></div>
+                </div>
+                <!-- disqus 评论框 end -->
+                
+
+            </div>
+    <!-- Side Catalog Container -->
+        
+
+    <!-- Sidebar Container -->
+
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <!-- no hr -->
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                       
+                    </div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>FRIENDS</h5>
+                <ul class="list-inline">
+
+                    
+                        <li><a href="#" target="_blank">留着</a></li>
+                    
+                        <li><a href="#" target="_blank">也留着</a></li>
+                    
+                </ul>
+                
+            </div>
+
+        </div>
+    </div>
+</article>
+
+
+
+
+<!-- disqus 公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = "hexo-theme-huxblog";
+    var disqus_identifier = "https://simontage.github.io/2018/05/18/OSPF协议/";
+    var disqus_url = "https://simontage.github.io/2018/05/18/OSPF协议/";
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<!-- disqus 公共JS代码 end -->
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("https://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'always',
+          placement: 'right',
+          icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+
+    <!-- Footer -->
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                
+                
+                
+
+                
+
+                
+
+                
+
+                
+
+                </ul>
+                <p class="copyright text-muted">
+                    Copyright &copy; Manson&#39;s Notes 2019 
+                    <br>
+                    Theme by <a href="http://huangxuan.me">Hux</a> 
+                    <span style="display: inline-block; margin: 0 5px;">
+                        <i class="fa fa-heart"></i>
+                    </span> 
+                    Ported by <a href="http://blog.kaijun.rocks">Kaijun</a> | 
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="91px" height="20px"
+                        src="https://ghbtns.com/github-btn.html?user=kaijun&repo=hexo-theme-huxblog&type=star&count=true" >
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js"></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js"></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/hux-blog.min.js"></script>
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/    
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("https://simontage.github.io/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("https://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+<script>
+    // dynamic User by Hux
+    var _gaId = 'UA-49627206-1';
+    var _gaDomain = 'null';
+
+    // Originial
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', _gaId, _gaDomain);
+    ga('send', 'pageview');
+</script>
+
+
+
+
+<!-- Baidu Tongji -->
+
+
+<!-- Side Catalog -->
+
+
+
+
+
+<!-- Image to hack wechat -->
+<img src="https://simontage.github.io/img/icon_wechat.png" width="0" height="0" />
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>

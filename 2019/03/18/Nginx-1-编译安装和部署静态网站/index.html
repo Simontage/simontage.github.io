@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="keyword"  content="">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>
+        
+          Nginx(1)-编译安装和部署静态网站 - Manson的备忘录 | Manson&#39;s Notes
+        
+    </title>
+
+    <link rel="canonical" href="https://simontage.github.io/2019/03/18/Nginx-1-编译安装和部署静态网站/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/hux-blog.min.css">
+
+    <!-- Pygments Highlight CSS -->
+    <link rel="stylesheet" href="/css/highlight.css">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="https://cdn.staticfile.org/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- Hux Delete, sad but pending in China
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
+    css'>
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+</head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Manson&#39;s Notes</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'s height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+
+                    
+
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/about/">About</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/archives/">Archives</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/tags/">Tags</a>
+                        </li>
+                        
+                    
+                    
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Main Content -->
+    
+<!-- Image to hack wechat -->
+<!-- <img src="https://simontage.github.io/img/icon_wechat.png" width="0" height="0"> -->
+<!-- <img src="{{ site.baseurl }}/{% if page.header-img %}{{ page.header-img }}{% else %}{{ site.header-img }}{% endif %}" width="0" height="0"> -->
+
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        background-image: url('nginx_header.png')
+    }
+</style>
+<header class="intro-header" >
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                          <a class="tag" href="/tags/#web - Nginx" title="web - Nginx">web - Nginx</a>
+                        
+                    </div>
+                    <h1>Nginx(1)-编译安装和部署静态网站</h1>
+                    <h2 class="subheading"></h2>
+                    <span class="meta">
+                        Posted by Manson on
+                        2019-03-18
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+    <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+                <h2 id="初识Nginx"><a href="#初识Nginx" class="headerlink" title="初识Nginx"></a>初识Nginx</h2><p><strong>Nginx 的三个主要应用场景：</strong></p>
+<ul>
+<li><p>静态资源服务：通过本地文件系统提供服务</p>
+</li>
+<li><p>反向代理服务：缓存加速与负载均衡</p>
+</li>
+<li><p>API服务：OpenResty</p>
+</li>
+</ul>
+<p><strong>Nginx 背景和优点：</strong></p>
+<p>互联网的数据量快速增长、摩尔定律的性能提升以及低效的 Apache（一个连接对应一个进程）促使 Nginx 的出现。</p>
+<p><img src="https://blog-1257171343.cos.ap-chengdu.myqcloud.com/00nginx%20%E5%B8%82%E5%9C%BA%E5%8D%A0%E6%9C%89%E7%8E%87.png" alt="目前 Nginx 占有率已经排名第2位"></p>
+<p>Nginx 的优点</p>
+<ul>
+<li>高并发、高性能：32核64G 内存可以处理数千万并发连接</li>
+<li>可扩展性：得益于模块化设计</li>
+<li>高可靠性：持续不间断运行数年</li>
+<li>热部署：不停止服务情况下，升级 Nginx</li>
+<li>BSD 许可证</li>
+</ul>
+<p>Nginx 的组成</p>
+<ul>
+<li>Nginx 二进制可执行文件：由各模块源码编译出的一个文件</li>
+<li>Nginx.conf 配置文件：控制 nginx 的行为</li>
+<li>access.log 访问日志：记录每一条 http 请求信息</li>
+<li>error.log 错误日志：定位问题</li>
+</ul>
+<p>Nginx 的版本发布</p>
+<p>开源版本的 Nginx 中，奇数版本的 Nginx 如1.15.x 是 Mainline 主干版本，它会有新的功能，但可能并不稳定，偶数版本如1.14.x，是Stable 稳定版本。每个版本的 CHANGES 中，包含三部分：Feature新增功能、Bugfix 修复 bug、Change重构。</p>
+<h2 id="编译-Nginx"><a href="#编译-Nginx" class="headerlink" title="编译 Nginx"></a>编译 Nginx</h2><p>安装 Nginx 的方法主要用两种：编译 Nginx 或者直接安装二进制 nginx。二进制格式的 Nginx 中模块已经编译，但并不是每一个模块（功能）都开启（被编译），一些第三方模块，同样包含强大的功能就无法编译到二进制 Nginx 中。自主编译 nginx 可以根据自己的需求合理开启需要编译的模块。</p>
+<ol>
+<li><p>下载 Nginx</p>
+<p>下载你需要的 <a href="http://nginx.org/en/download.html" target="_blank" rel="noopener">Nginx 版本</a>，并解压缩。解压缩 Nginx 的源码包后，包含6个目录和5个文件</p>
+<p><img src="https://blog-1257171343.cos.ap-chengdu.myqcloud.com/01%20nginx%E6%BA%90%E7%A0%81%E7%9B%AE%E5%BD%95.png" alt=""></p>
+<ul>
+<li><strong>auto</strong>：有四个子目录，用于编译的 cc、lib库目录 lib、判断操作系统的 os、types 和19个文件用于辅助 configure判断当前系统支持哪些模块以及特性</li>
+<li><strong>conf</strong>：示例文件，安装成功后，会将此目录中的内容拷贝到安装目录</li>
+<li><strong>configure</strong>：执行编译前的必备动作，生成中间文件</li>
+<li><strong>contrib</strong>：提供两个 perl 脚本和一个vim 配置文件用于高亮显示 nginx 的配置文件，文件放置于~/.vim/中：<code>cp -r contrib/vim/* ~/.vim/</code></li>
+<li><strong>html</strong>：提供两个标准 html 文件 index.html 和50X.html</li>
+<li><strong>src</strong>：源码目录</li>
+</ul>
+</li>
+<li><p>Configure</p>
+<p>获取支持的的参数使用<code>./configure --help</code>，编译时支持的参数有三类：</p>
+<ul>
+<li>指定 Nginx 各种文件的安装位置；</li>
+<li>确定开启和关闭的模块。使用 with 开头的需要手动开启，使用 without 的默认会编译到 nginx 中，指定即可取消编译该模块；</li>
+<li>指定 nginx 的安装过程中使用的特殊参数，如 c 编译器的路径等。</li>
+</ul>
+<p>执行<code>./configure --prefix=/usr/local/nginx</code>检查系统环境是否符合满足安装要求，并将定义好的安装配置信息和系统环境信息写入Makefile文件中。 Makefile 文件包含了如何编译、启用哪些功能、安装路径等信息。</p>
+<p>在预编译过程中，可以出现的错误大部分是因为软件包的缺失。编译 Nginx 需要依赖的软件包关系有：</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">yum <span class="keyword">install</span> -y gcc gcc-c++ autoconf automake make /</span><br><span class="line">yum <span class="keyword">install</span> -y pcre pcre-devel /</span><br><span class="line">yum <span class="keyword">install</span> -y zlib zlib-devel</span><br></pre></td></tr></table></figure>
+<p>预编译后，会生成 objs 目录和 Makefile 文件<img src="https://blog-1257171343.cos.ap-chengdu.myqcloud.com/02nginx%E9%A2%84%E7%BC%96%E8%AF%91%E5%90%8E%E6%BA%90%E7%A0%81%E7%9B%AE%E5%BD%95.png" alt="编译后生成的中间文件"></p>
+</li>
+<li><p>编译</p>
+<p>执行make命令进行编译。make命令会根据Makefile文件进行编译。编译工作主要是调用编译器(如gcc)将源码编译为可执行文件，通常需要一些函数库才能产生一个完整的可执行文件。<img src="https://blog-1257171343.cos.ap-chengdu.myqcloud.com/03ngnix%E7%BC%96%E8%AF%91%E5%90%8E%E7%9A%84%E7%9B%AE%E5%BD%95.png" alt=""></p>
+<p>编译生成的二进制文件存在于 src 目录中，如果使用了动态模块，编译产生的.so 文件，会存在于 objs 目录中。</p>
+</li>
+<li><p>安装</p>
+<p>上面之所以没有使用 make &amp;&amp; make install，是因为如果是升级 nginx，则需要将二进制文件拷贝到安装目录中。首次安装 nginx时，可以使用make install将编译的文件复制到指定目录中。 <img src="https://blog-1257171343.cos.ap-chengdu.myqcloud.com/04nginx%E5%AE%89%E8%A3%85%E5%90%8E%E7%9A%84%E7%9B%AE%E5%BD%95.png" alt="屏幕快照 2019-03-16 09.55.10"></p>
+<p>创建软链接：<code>sudo ln -s /usr/nginx-1.14.2/sbin/nginx /usr/bin/nginx</code></p>
+</li>
+</ol>
+<h2 id="Nginx-的配置文件"><a href="#Nginx-的配置文件" class="headerlink" title="Nginx 的配置文件"></a>Nginx 的配置文件</h2><p>Nginx 的配置文件中，nginx.conf 为主配置文件，配置文件中，以#开始的行，或者是前面有若干空格或者 TAB 键，然后再跟#的行，都会被认为是注释。</p>
+<p>Nginx 的配置文件是以 block（块）形式组织，每个 block 都是以一个块名称和一对大括号“{}”组成。block 分为几个层级，整个配置文件为 main 级别，即最大层级；在 main 级别之下会有 event、http、mail 等层级，而 http 中又会包含 server block，server block 中可以包含 location block。即块之间是可以嵌套的，内层 block 继承外层 block。最基本的配置项语法格式是“配置项名  配置项值1  配置项值2  配置项值3  … ”；</p>
+<p>每个层级可以有自己的指令（Directive），例如 worker_processes 是一个main层级指令，它指定 Nginx 服务的 Worker 进程数量。有的指令只能在一个层级中配置，如worker_processes 只能存在于 main 中，而有的指令可以存在于多个层级，在这种情况下，子 block 会继承 父 block 的配置，同时如果子block配置了与父block不同的指令，则会覆盖掉父 block 的配置。指令的格式是“指令名 参数1 参数2 … 参数N;”，注意参数间可用任意数量空格分隔，最后要加分号。</p>
+<p>下图是 Nginx 配置文件的一般结构：</p>
+<p><img src="https://blog-1257171343.cos.ap-chengdu.myqcloud.com/05Nginx%20%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%E7%9A%84%E5%B1%82%E6%AC%A1%E7%BB%93%E6%9E%84.png" alt=""></p>
+<p>总结一下 Nginx 的配置语法：</p>
+<ul>
+<li>配置文件由指令块和指令组成</li>
+<li>每条指令以“;”结尾，指令与参数间以空格分隔</li>
+<li>指令块以{}将多条指令组织在一起</li>
+<li>include 语句允许组合多个配置文件以提升可维护性</li>
+<li>使用“#”添加注释，以提高可读性</li>
+<li>“$”使用变量</li>
+<li>部分指令的参数支持正则表达式</li>
+</ul>
+<p>Nginx 中时间参数的单位</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">时间单位</th>
+<th style="text-align:center">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">ms</td>
+<td style="text-align:center">milliseconds</td>
+</tr>
+<tr>
+<td style="text-align:center">s</td>
+<td style="text-align:center">seconds</td>
+</tr>
+<tr>
+<td style="text-align:center">m</td>
+<td style="text-align:center">minutes</td>
+</tr>
+<tr>
+<td style="text-align:center">h</td>
+<td style="text-align:center">hours</td>
+</tr>
+<tr>
+<td style="text-align:center">d</td>
+<td style="text-align:center">days</td>
+</tr>
+<tr>
+<td style="text-align:center">w</td>
+<td style="text-align:center">weeks</td>
+</tr>
+<tr>
+<td style="text-align:center">M</td>
+<td style="text-align:center">months（30 days）</td>
+</tr>
+<tr>
+<td style="text-align:center">y</td>
+<td style="text-align:center">years（365 days）</td>
+</tr>
+</tbody>
+</table>
+<p>Nginx 中空间参数的单位</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">空间单位</th>
+<th style="text-align:center">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">不加任何单位</td>
+<td style="text-align:center">bytes</td>
+</tr>
+<tr>
+<td style="text-align:center">k/K</td>
+<td style="text-align:center">Kilobytes</td>
+</tr>
+<tr>
+<td style="text-align:center">m/M</td>
+<td style="text-align:center">Meagbytes</td>
+</tr>
+<tr>
+<td style="text-align:center">g/G</td>
+<td style="text-align:center">Gigabytes</td>
+</tr>
+</tbody>
+</table>
+<p>Nginx 服务运行时，需要加载几个核心模块和一个事件模块，这些模块运行时所支持的配置项称为基本配置；基本配置项大概分为四类：</p>
+<ul>
+<li>用于调试、定位的配置项</li>
+<li>正常运行的必备配置项</li>
+<li>优化性能的配置项</li>
+<li>事件类配置项</li>
+</ul>
+<h2 id="操作-Nginx-命令行"><a href="#操作-Nginx-命令行" class="headerlink" title="操作 Nginx 命令行"></a>操作 Nginx 命令行</h2><table>
+<thead>
+<tr>
+<th style="text-align:center">功能</th>
+<th style="text-align:center">命令行</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">一般格式</td>
+<td style="text-align:center">nginx -s reload</td>
+</tr>
+<tr>
+<td style="text-align:center">获取帮助</td>
+<td style="text-align:center">-？-h</td>
+</tr>
+<tr>
+<td style="text-align:center">使用指定的配置文件</td>
+<td style="text-align:center">-c</td>
+</tr>
+<tr>
+<td style="text-align:center">指定配置指令</td>
+<td style="text-align:center">-g</td>
+</tr>
+<tr>
+<td style="text-align:center">执行运行的目录</td>
+<td style="text-align:center">-p</td>
+</tr>
+<tr>
+<td style="text-align:center">发送信号</td>
+<td style="text-align:center">-s<br>立刻停止服务 stop<br>优雅停止服务 quit<br>重载配置文件 reload<br> 重新开始记录日志文件 reopen</td>
+</tr>
+<tr>
+<td style="text-align:center">测试配置文件语法</td>
+<td style="text-align:center">-t -T</td>
+</tr>
+<tr>
+<td style="text-align:center">打印 nginx 的版本和编译信息</td>
+<td style="text-align:center">-v -v</td>
+</tr>
+</tbody>
+</table>
+<p>这里需要说明的是：在修改配置文件后，使用<code>nginx -s reload</code>，在不停止服务的情况下，运行修改后的配置文件。</p>
+<h3 id="热部署-nginx（升级）"><a href="#热部署-nginx（升级）" class="headerlink" title="热部署 nginx（升级）"></a>热部署 nginx（升级）</h3><ol>
+<li>备份低版本的 nginx 二进制文件<code>cp ngnx nginx.old</code></li>
+<li>将编译好的新版本 nginx 二进制文件拷贝替换正在运行的 nginx 进程所使用的二进制文件</li>
+<li>发送信号给旧 nginx master 进程，让其优雅关闭进程<code>kill -WINCH [旧 ngix mater 进程号]</code>。当前旧 nginx master还存在的原因是，如果新版本 nginx有问题，可以进行版本回退。</li>
+</ol>
+<h3 id="日志切割"><a href="#日志切割" class="headerlink" title="日志切割"></a>日志切割</h3><ol>
+<li>将当前的日志文件复制到系统的另外一个位置</li>
+<li>执行命令<code>nginx -s reopen</code>，nginx 会重新生成同名的日志文件</li>
+</ol>
+<p>实际上日志切割会定期进行，应该使用 bash 脚本来实现，并有 crond 定时执行。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/bin/bash</span></span><br><span class="line"><span class="comment">#Rotate the Nginx logs to prevent a single logfile from consuming too much disk space.</span></span><br><span class="line"></span><br><span class="line">LOGS_PATH=/usr/<span class="built_in">local</span>/nginx/logs/<span class="built_in">history</span></span><br><span class="line">CUR_LOGS_PATH=/usr/<span class="built_in">local</span>/nginx/logs</span><br><span class="line">YESTERDAY=$(date -d <span class="string">"yesterday"</span> +%Y-%m-%d)</span><br><span class="line">mv <span class="variable">$&#123;CUR_LOGS_PATH&#125;</span>/access.log <span class="variable">$&#123;LOGS_PATH&#125;</span>/access_<span class="variable">$&#123;YESTERDAY&#125;</span>.<span class="built_in">log</span></span><br><span class="line">mv <span class="variable">$&#123;CUR_LOGS_PATH&#125;</span>/error.log <span class="variable">$&#123;LOGS_PATH&#125;</span>/error_<span class="variable">$&#123;YESTERDAY&#125;</span>.<span class="built_in">log</span></span><br><span class="line"><span class="comment">#向 Nginx 主进程发送 USR1 信号。USR1 信号试重新打开日志文件</span></span><br><span class="line"><span class="built_in">kill</span> -USR1 $(cat /usr/<span class="built_in">local</span>/nginx/logs/nginx.pid)</span><br></pre></td></tr></table></figure>
+<h2 id="使用-Nginx-搭建一个静态服务器"><a href="#使用-Nginx-搭建一个静态服务器" class="headerlink" title="使用 Nginx 搭建一个静态服务器"></a>使用 Nginx 搭建一个静态服务器</h2><p>将静态网站部署在服务器中对外提供服务，在 nginx 安装目录中创建一个 dlib 目录用于存放静态网页<img src="https://blog-1257171343.cos.ap-chengdu.myqcloud.com/06%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99%E5%9C%A8%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%9A%84%E4%BD%8D%E7%BD%AE.png" alt=""></p>
+<p>配置 nginx，修改配置文件中的 server 中的监听端口listen为80或8080，location 后面定义的”/“表示所有请求，指定 url的后缀与服务端文件系统路径一一对应，有两种用法，一种是使用 root，一种是使用 alias，如使用 alias dlib/就表示 url/后面的路径与 dlib/后面的路径是一一对应的。</p>
+<p>节选配置文件：</p>
+<figure class="highlight crmsh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">user</span>  <span class="title">simon</span>;</span><br><span class="line">...</span><br><span class="line">http&#123;</span><br><span class="line">    gzip on;</span><br><span class="line">    ...</span><br><span class="line">    server&#123;</span><br><span class="line">        listen <span class="number">8080</span>;</span><br><span class="line">        ...</span><br><span class="line">        <span class="keyword">location</span> <span class="title">/ &#123;</span></span><br><span class="line"><span class="title">            alias</span> dlib/;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>优化：开启压缩</strong></p>
+<figure class="highlight applescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">gzip  <span class="keyword">on</span>; <span class="comment">#开启 gzip 压缩</span></span><br><span class="line">gzip_min_length <span class="number">1</span>; <span class="comment">#压缩的最小单位，小于1字节不压缩</span></span><br><span class="line">gzip_comp_level <span class="number">2</span>; <span class="comment">#压缩级别</span></span><br><span class="line">gzip_types <span class="built_in">text</span>/plain <span class="built_in">application</span>/x-javascript <span class="built_in">text</span>/css <span class="built_in">application</span>/xml <span class="built_in">text</span>/javascript applicat</span><br><span class="line">ion/x-httpd-php image/jpep image/gif image/png; <span class="comment">#针对指定类型进行压缩</span></span><br></pre></td></tr></table></figure>
+<p>压缩前：</p>
+<p><img src="https://blog-1257171343.cos.ap-chengdu.myqcloud.com/07%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99%E5%BC%80%E5%90%AF%20gzip%20%E5%89%8D.png" alt=""></p>
+<p>压缩后：</p>
+<p><img src="https://blog-1257171343.cos.ap-chengdu.myqcloud.com/08%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99%E5%BC%80%E5%90%AF%20gzip%20%E5%90%8E.png" alt=""></p>
+<p><strong>功能：将文件系统通过web 网页展示</strong></p>
+<p>通过 <a href="http://nginx.org/en/docs/http/ngx_http_autoindex_module.html" target="_blank" rel="noopener">ngx_http_autoindex_module</a> ，可以将以“/”结尾的 url 对应到相应文件系统目录中，并列出。在 location 块中加入“autoindex on;”即可开启。</p>
+<p>这里注意的是，当打开的是首页依然是一个web 页面，只有 url 中继续定义了查看静态网站文件系统目录中的某一目录时，才会将文件列出。</p>
+<p><strong>优化：高并发时，限制大文件的传输速率</strong></p>
+<p>在 location 块中，设置“set <a href="http://nginx.org/en/docs/http/ngx_http_core_module.html#limit_rate" target="_blank" rel="noopener">$limit_rate</a> <a href="http://nginx.org/en/docs/http/ngx_http_core_module.html#variables" target="_blank" rel="noopener">1k(http 模块的内置变量)</a>;”意思是限制 nginx 每秒传输1字节到浏览器中，</p>
+<p><strong>定义 nginx access 日志格式</strong></p>
+<p>定义日志格式需要命名，因为会根据不同的场景记录不同的日志信息，nginx 默认的日志记录名称为 main，记录了诸如客户端 IP、客户端名称、时间、状态码等。</p>
+<p>定义日志，在 http 配置块下，使用 log_format，后面定义日志的名称，然后使用nginx 中指定的变量定义需要记录的日志格式。</p>
+<p>定义日志存储位置，使用 access_log，定义 access_log的位置决定了记录日志的范围，也就是说，当在 server 配置块中定义了 access_log，那么发往server 指定的端口或者域名的请求，都会使用 access_log定义的级别和位置进行记录。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><ol>
+<li>如何编译、安装、升级 Nginx</li>
+<li>部署一个静态网站常用的流程，以及 Nginx 的配置文件中相关指令的配置</li>
+</ol>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ol>
+<li><a href="https://www.kancloud.cn/digest/understandingnginx/202587" target="_blank" rel="noopener">Nginx 配置文件</a></li>
+<li><a href="https://www.nginx.com/resources/wiki/start/topics/examples/systemd/" target="_blank" rel="noopener">NGINX systemd service file</a></li>
+<li><a href="https://www.cnblogs.com/wjb10000/p/5566801.html" target="_blank" rel="noopener">systemd 添加自定义系统服务</a></li>
+</ol>
+<h2 id="附录"><a href="#附录" class="headerlink" title="附录"></a>附录</h2><ol>
+<li><p><strong>预编译参数</strong></p>
+<figure class="highlight haml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line">mkdir -p /var/cache/nginx</span><br><span class="line"></span><br><span class="line">./configure \</span><br><span class="line">-<span class="ruby">-prefix=<span class="regexp">/usr/local</span><span class="regexp">/nginx \</span></span></span><br><span class="line"><span class="ruby">--sbin-path=<span class="regexp">/usr/sbin</span><span class="regexp">/nginx \</span></span></span><br><span class="line"><span class="ruby">--conf-path=<span class="regexp">/etc/nginx</span><span class="regexp">/nginx.conf \</span></span></span><br><span class="line"><span class="ruby">--error-log-path=<span class="regexp">/var/log</span><span class="regexp">/nginx/error</span>.log \</span></span><br><span class="line"><span class="ruby">--http-log-path=<span class="regexp">/var/log</span><span class="regexp">/nginx/access</span>.log \</span></span><br><span class="line"><span class="ruby">--pid-path=<span class="regexp">/var/run</span><span class="regexp">/nginx.pid \</span></span></span><br><span class="line"><span class="ruby">--lock-path=<span class="regexp">/var/run</span><span class="regexp">/nginx.lock \</span></span></span><br><span class="line"><span class="ruby">--http-client-body-temp-path=<span class="regexp">/var/cache</span><span class="regexp">/nginx/client</span>_temp \</span></span><br><span class="line"><span class="ruby">--http-proxy-temp-path=<span class="regexp">/var/cache</span><span class="regexp">/nginx/proxy</span>_temp \</span></span><br><span class="line"><span class="ruby">--http-fastcgi-temp-path=<span class="regexp">/var/cache</span><span class="regexp">/nginx/fastcgi</span>_temp \</span></span><br><span class="line"><span class="ruby">--http-uwsgi-temp-path=<span class="regexp">/var/cache</span><span class="regexp">/nginx/uwsgi</span>_temp \</span></span><br><span class="line"><span class="ruby">--http-scgi-temp-path=<span class="regexp">/var/cache</span><span class="regexp">/nginx/scgi</span>_temp \</span></span><br><span class="line"><span class="ruby">--user=nobody \</span></span><br><span class="line"><span class="ruby">--group=nobody \</span></span><br><span class="line"><span class="ruby">--with-pcre \</span></span><br><span class="line"><span class="ruby">--with-http_v2_module \</span></span><br><span class="line"><span class="ruby">--with-http_ssl_module \</span></span><br><span class="line"><span class="ruby">--with-http_realip_module \</span></span><br><span class="line"><span class="ruby">--with-http_addition_module \</span></span><br><span class="line"><span class="ruby">--with-http_sub_module \</span></span><br><span class="line"><span class="ruby">--with-http_dav_module \</span></span><br><span class="line"><span class="ruby">--with-http_flv_module \</span></span><br><span class="line"><span class="ruby">--with-http_mp4_module \</span></span><br><span class="line"><span class="ruby">--with-http_gunzip_module \</span></span><br><span class="line"><span class="ruby">--with-http_gzip_static_module \</span></span><br><span class="line"><span class="ruby">--with-http_random_index_module \</span></span><br><span class="line"><span class="ruby">--with-http_secure_link_module \</span></span><br><span class="line"><span class="ruby">--with-http_stub_status_module \</span></span><br><span class="line"><span class="ruby">--with-http_auth_request_module \</span></span><br><span class="line"><span class="ruby">--with-mail \</span></span><br><span class="line"><span class="ruby">--with-mail_ssl_module \</span></span><br><span class="line"><span class="ruby">--with-file-aio \</span></span><br><span class="line"><span class="ruby">--with-ipv6 \</span></span><br><span class="line"><span class="ruby">--with-http_v2_module \</span></span><br><span class="line"><span class="ruby">--with-threads \</span></span><br><span class="line"><span class="ruby">--with-stream \</span></span><br><span class="line"><span class="ruby">--with-stream_ssl_module</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>NGINX systemd service file</strong></p>
+<p>system 的有系统和用户的区分：系统（/lib/systemd/system/）、用户（/etc/lib/systemd/system/），一般系统管理员手工创建的单元文件建议存放在/etc/lib/systemd/system/目录下。</p>
+<p>在/lib/systemd/system/目录下创建服务文件nginx.service</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=The NGINX HTTP and reverse proxy server #服务的简单描述</span><br><span class="line">Documentation=http://nginx.org/en/docs/ #服务文档，可有可无</span><br><span class="line">After=syslog.target network.target remote-fs.target nss-lookup.target</span><br><span class="line">#定义启动顺序，After表示本服务在指定的服务之后启动，另外类似的还有 Before、Requires本单元启动，它需要的单元也会被启动；它需要的单元停止了，这个单元也停止了、wants推荐使用，这个单元启动了，它需要的单元也会被启动；它需要的单元被停止了，对本单元无影响。</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line">Type=forking </span><br><span class="line">#systemd认为当该服务进程fork，且父进程退出后服务启动成功。对于常规的守护进程（daemon），除非你确定此启动方式无法满足需求，使用此类型启动即可。使用此启动类型应同时指定 PIDFile=，以便systemd能够跟踪服务的主进程。</span><br><span class="line">PIDFile=/usr/nginx-1.14.2/logs/nginx.pid</span><br><span class="line">ExecStartPre=/usr/bin/nginx -t</span><br><span class="line">ExecStart=/usr/bin/nginx</span><br><span class="line">ExecReload=/usr/sbin/nginx -s reload</span><br><span class="line">ExecStop=/bin/kill -s QUIT $MAINPID</span><br><span class="line">PrivateTmp=true</span><br><span class="line"></span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></table></figure></li>
+</ol>
+
+
+                <hr>
+
+                
+
+                <ul class="pager">
+                    
+                    
+                        <li class="next">
+                            <a href="/2018/08/10/使用-Ansible-批量发送公钥/" data-toggle="tooltip" data-placement="top" title="使用 Ansible 批量发送公钥">Next Post &rarr;</a>
+                        </li>
+                    
+                </ul>
+
+                
+
+                
+                <!-- disqus 评论框 start -->
+                <div class="comment">
+                    <div id="disqus_thread" class="disqus-thread"></div>
+                </div>
+                <!-- disqus 评论框 end -->
+                
+
+            </div>
+    <!-- Side Catalog Container -->
+        
+
+    <!-- Sidebar Container -->
+
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <!-- no hr -->
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                       
+                          <a class="tag" href="/tags/#web - Nginx" title="web - Nginx">web - Nginx</a>
+                        
+                    </div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>FRIENDS</h5>
+                <ul class="list-inline">
+
+                    
+                        <li><a href="#" target="_blank">留着</a></li>
+                    
+                        <li><a href="#" target="_blank">也留着</a></li>
+                    
+                </ul>
+                
+            </div>
+
+        </div>
+    </div>
+</article>
+
+
+
+
+<!-- disqus 公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = "hexo-theme-huxblog";
+    var disqus_identifier = "https://simontage.github.io/2019/03/18/Nginx-1-编译安装和部署静态网站/";
+    var disqus_url = "https://simontage.github.io/2019/03/18/Nginx-1-编译安装和部署静态网站/";
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<!-- disqus 公共JS代码 end -->
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("https://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'always',
+          placement: 'right',
+          icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+
+    <!-- Footer -->
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                
+                
+                
+
+                
+
+                
+
+                
+
+                
+
+                </ul>
+                <p class="copyright text-muted">
+                    Copyright &copy; Manson&#39;s Notes 2019 
+                    <br>
+                    Theme by <a href="http://huangxuan.me">Hux</a> 
+                    <span style="display: inline-block; margin: 0 5px;">
+                        <i class="fa fa-heart"></i>
+                    </span> 
+                    Ported by <a href="http://blog.kaijun.rocks">Kaijun</a> | 
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="91px" height="20px"
+                        src="https://ghbtns.com/github-btn.html?user=kaijun&repo=hexo-theme-huxblog&type=star&count=true" >
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js"></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js"></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/hux-blog.min.js"></script>
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/    
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("https://simontage.github.io/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("https://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+<script>
+    // dynamic User by Hux
+    var _gaId = 'UA-49627206-1';
+    var _gaDomain = 'null';
+
+    // Originial
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', _gaId, _gaDomain);
+    ga('send', 'pageview');
+</script>
+
+
+
+
+<!-- Baidu Tongji -->
+
+
+<!-- Side Catalog -->
+
+
+
+
+
+<!-- Image to hack wechat -->
+<img src="https://simontage.github.io/img/icon_wechat.png" width="0" height="0" />
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>

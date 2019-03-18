@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="keyword"  content="">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>
+        
+          使用 Ansible 批量发送公钥 - Manson的备忘录 | Manson&#39;s Notes
+        
+    </title>
+
+    <link rel="canonical" href="https://simontage.github.io/2018/08/10/使用-Ansible-批量发送公钥/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/hux-blog.min.css">
+
+    <!-- Pygments Highlight CSS -->
+    <link rel="stylesheet" href="/css/highlight.css">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="https://cdn.staticfile.org/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- Hux Delete, sad but pending in China
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
+    css'>
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+</head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Manson&#39;s Notes</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'s height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+
+                    
+
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/about/">About</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/archives/">Archives</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/tags/">Tags</a>
+                        </li>
+                        
+                    
+                    
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Main Content -->
+    
+<!-- Image to hack wechat -->
+<!-- <img src="https://simontage.github.io/img/icon_wechat.png" width="0" height="0"> -->
+<!-- <img src="{{ site.baseurl }}/{% if page.header-img %}{{ page.header-img }}{% else %}{{ site.header-img }}{% endif %}" width="0" height="0"> -->
+
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        background-image: url('/img/home-bg.jpg')
+    }
+</style>
+<header class="intro-header" >
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                    </div>
+                    <h1>使用 Ansible 批量发送公钥</h1>
+                    <h2 class="subheading"></h2>
+                    <span class="meta">
+                        Posted by Manson on
+                        2018-08-10
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+    <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+                <ul>
+<li>使用 Ansible 将管理主机的公钥发送到集群各主机</li>
+<li>使用 Ansible 将 hosts 文件发送到集群各主机</li>
+<li>使用 Ansible 执行系统初始化脚本并执行</li>
+</ul>
+<h2 id="系统环境"><a href="#系统环境" class="headerlink" title="系统环境"></a>系统环境</h2><p>系统和内核版本</p>
+<figure class="highlight llvm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root<span class="title">@manager</span> ~]# cat /etc/redhat-<span class="keyword">release</span> </span><br><span class="line">CentOS Linux <span class="keyword">release</span> <span class="number">7.5</span>.<span class="number">1804</span> (Core) </span><br><span class="line">[root<span class="title">@manager</span> ~]# uname -r</span><br><span class="line"><span class="number">3.10</span>.<span class="number">0</span><span class="number">-862</span>.el<span class="number">7</span>.<span class="keyword">x</span><span class="number">86</span>_<span class="number">64</span></span><br></pre></td></tr></table></figure>
+<p>主机网络</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">hostname</th>
+<th style="text-align:center">网卡 ens33</th>
+<th style="text-align:center">网卡 ens34</th>
+<th style="text-align:center">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">manager</td>
+<td style="text-align:center">192.168.1.100/24</td>
+<td style="text-align:center">172.16.240.100/24</td>
+<td style="text-align:center">X-管理服务器</td>
+</tr>
+<tr>
+<td style="text-align:center">web1</td>
+<td style="text-align:center">192.168.1.101/24</td>
+<td style="text-align:center">172.16.240.101/24</td>
+<td style="text-align:center">A1-apache web 服务器</td>
+</tr>
+<tr>
+<td style="text-align:center">web2</td>
+<td style="text-align:center">192.168.1.102/24</td>
+<td style="text-align:center">172.16.240.102/24</td>
+<td style="text-align:center">A2-nginx web 服务器</td>
+</tr>
+<tr>
+<td style="text-align:center">db1</td>
+<td style="text-align:center">192.168.1.103/24</td>
+<td style="text-align:center">172.16.240.103/24</td>
+<td style="text-align:center">B1-mariadb 数据库服务器</td>
+</tr>
+<tr>
+<td style="text-align:center">db2</td>
+<td style="text-align:center">192.168.1.104/24</td>
+<td style="text-align:center">172.16.240.104/24</td>
+<td style="text-align:center">B2-mariadb 数据库服务器</td>
+</tr>
+<tr>
+<td style="text-align:center">lb1</td>
+<td style="text-align:center">192.168.1.105/24</td>
+<td style="text-align:center">172.16.240.105/24</td>
+<td style="text-align:center">C1-nginx 负载均衡服务器</td>
+</tr>
+<tr>
+<td style="text-align:center">lb2</td>
+<td style="text-align:center">192.168.1.106/24</td>
+<td style="text-align:center">172.16.240.106/24</td>
+<td style="text-align:center">C2-nginx 负载均衡服务器</td>
+</tr>
+<tr>
+<td style="text-align:center">nfs</td>
+<td style="text-align:center">192.168.1.107/24</td>
+<td style="text-align:center">172.16.240.107/24</td>
+<td style="text-align:center">D1-NFS 存储服务器</td>
+</tr>
+<tr>
+<td style="text-align:center">backup</td>
+<td style="text-align:center">192.168.1.108/24</td>
+<td style="text-align:center">172.16.240.108/24</td>
+<td style="text-align:center">D2-rsync 存储服务器</td>
+</tr>
+</tbody>
+</table>
+<h2 id="管理服务器安装配置-Ansible"><a href="#管理服务器安装配置-Ansible" class="headerlink" title="管理服务器安装配置 Ansible"></a>管理服务器安装配置 Ansible</h2><p>管理服务器安装安装 Ansible 并且生成密钥对</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#! /bin/bash</span></span><br><span class="line"><span class="built_in">echo</span> <span class="string">'&gt;&gt;&gt;正在生成密钥对&lt;&lt;&lt;'</span> &amp;&amp; ssh-keygen -t rsa -f ~/.ssh/id_rsa -P <span class="string">""</span> &amp;&gt; /dev/null &amp;&amp; <span class="built_in">echo</span> <span class="string">'***密钥对创建成功***'</span></span><br><span class="line"><span class="built_in">echo</span> <span class="string">'&gt;&gt;&gt;正在安装Ansible&lt;&lt;&lt;'</span> &amp;&amp; yum -y install ansible &amp;&gt; /dev/null &amp;&amp; <span class="built_in">echo</span> <span class="string">'***Ansible安装成功***'</span></span><br></pre></td></tr></table></figure>
+<p>配置 Ansible 主机列表<code>/etc/ansible/hosts</code></p>
+<figure class="highlight lsl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">[manager]</span><br><span class="line">X-Manager_192<span class="number">.168</span><span class="number">.1</span><span class="number">.100</span> ansible_host=<span class="number">192.168</span><span class="number">.1</span><span class="number">.100</span>      ansible_ssh_user=root   ansible_ssh_pass=<span class="string">"xxx"</span></span><br><span class="line"></span><br><span class="line">[web]</span><br><span class="line">web1_192<span class="number">.168</span><span class="number">.1</span><span class="number">.101</span>      ansible_host=<span class="number">192.168</span><span class="number">.1</span><span class="number">.101</span>      ansible_ssh_user=root   ansible_ssh_pass=<span class="string">"xxx"</span></span><br><span class="line">web2_192<span class="number">.168</span><span class="number">.1</span><span class="number">.102</span>      ansible_host=<span class="number">192.168</span><span class="number">.1</span><span class="number">.102</span>      ansible_ssh_user=root   ansible_ssh_pass=<span class="string">"xxx"</span></span><br><span class="line"></span><br><span class="line">[db]</span><br><span class="line">db1_192<span class="number">.168</span><span class="number">.1</span><span class="number">.103</span>       ansible_host=<span class="number">192.168</span><span class="number">.1</span><span class="number">.103</span>      ansible_ssh_user=root   ansible_ssh_pass=<span class="string">"xxx"</span></span><br><span class="line">db2_192<span class="number">.168</span><span class="number">.1</span><span class="number">.104</span>       ansible_host=<span class="number">192.168</span><span class="number">.1</span><span class="number">.104</span>      ansible_ssh_user=root   ansible_ssh_pass=<span class="string">"xxx"</span></span><br><span class="line"></span><br><span class="line">[lb]</span><br><span class="line">lb1_192<span class="number">.168</span><span class="number">.1</span><span class="number">.105</span>       ansible_host=<span class="number">192.168</span><span class="number">.1</span><span class="number">.105</span>      ansible_ssh_user=root   ansible_ssh_pass=<span class="string">"xxx"</span></span><br><span class="line">lb2_192<span class="number">.168</span><span class="number">.1</span><span class="number">.106</span>       ansible_host=<span class="number">192.168</span><span class="number">.1</span><span class="number">.106</span>      ansible_ssh_user=root   ansible_ssh_pass=<span class="string">"xxx"</span></span><br><span class="line"></span><br><span class="line">[nfs]</span><br><span class="line">nfs_192<span class="number">.168</span><span class="number">.1</span><span class="number">.107</span>       ansible_host=<span class="number">192.168</span><span class="number">.1</span><span class="number">.107</span>      ansible_ssh_user=root   ansible_ssh_pass=<span class="string">"xxx"</span></span><br><span class="line"></span><br><span class="line">[backup]</span><br><span class="line">backup_192<span class="number">.168</span><span class="number">.1</span><span class="number">.108</span>    ansible_host=<span class="number">192.168</span><span class="number">.1</span><span class="number">.108</span>      ansible_ssh_user=root   ansible_ssh_pass=<span class="string">"xxx"</span></span><br></pre></td></tr></table></figure>
+<p>修改 ansible 配置文件/etc/ansible/ansible.cfg，禁用 ssh host key checking</p>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">[root@manager ~]</span><span class="comment"># vi /etc/ansible/ansible.cfg</span></span><br><span class="line"><span class="attr">host_key_checking</span> = <span class="literal">False</span></span><br></pre></td></tr></table></figure>
+<h2 id="使用-Ansible批量发送管理主机公钥"><a href="#使用-Ansible批量发送管理主机公钥" class="headerlink" title="使用 Ansible批量发送管理主机公钥"></a>使用 Ansible批量发送管理主机公钥</h2><p>ansible playbook</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">vi</span> <span class="string">push_ssh.yaml</span></span><br><span class="line"><span class="attr">- hosts:</span> <span class="string">all</span></span><br><span class="line"><span class="attr">  remote_user:</span> <span class="string">root</span></span><br><span class="line"></span><br><span class="line"><span class="attr">  tasks:</span></span><br><span class="line"><span class="attr">    - name:</span> <span class="string">copy</span> <span class="string">ssh</span> <span class="string">key</span> <span class="string">to</span> <span class="string">remote</span> <span class="string">servers</span></span><br><span class="line"><span class="attr">      authorized_key:</span> </span><br><span class="line"><span class="attr">        user:</span> <span class="string">"root"</span></span><br><span class="line"><span class="attr">        key:</span> <span class="string">"<span class="template-variable">&#123;&#123; lookup('file','/root/.ssh/id_rsa.pub') &#125;&#125;</span>"</span></span><br></pre></td></tr></table></figure>
+<p>执行 ansible playbook</p>
+<figure class="highlight x86asm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">[root@manager ~]# ansible-playbook push_ssh.yaml </span><br><span class="line"></span><br><span class="line">PLAY [all] *******************************************************************************************</span><br><span class="line"></span><br><span class="line">TASK [Gathering Facts] *******************************************************************************</span><br><span class="line"><span class="symbol">ok:</span> [web2_192<span class="meta">.168</span><span class="meta">.1</span><span class="meta">.102</span>]</span><br><span class="line"><span class="symbol">ok:</span> [lb1_192<span class="meta">.168</span><span class="meta">.1</span><span class="meta">.105</span>]</span><br><span class="line"><span class="symbol">ok:</span> [lb2_192<span class="meta">.168</span><span class="meta">.1</span><span class="meta">.106</span>]</span><br><span class="line"><span class="symbol">ok:</span> [Manager_192<span class="meta">.168</span><span class="meta">.1</span><span class="meta">.100</span>]</span><br><span class="line"><span class="symbol">ok:</span> [db2_192<span class="meta">.168</span><span class="meta">.1</span><span class="meta">.104</span>]</span><br><span class="line"><span class="symbol">ok:</span> [nfs_192<span class="meta">.168</span><span class="meta">.1</span><span class="meta">.107</span>]</span><br><span class="line"><span class="symbol">ok:</span> [web1_192<span class="meta">.168</span><span class="meta">.1</span><span class="meta">.101</span>]</span><br><span class="line"><span class="symbol">ok:</span> [db1_192<span class="meta">.168</span><span class="meta">.1</span><span class="meta">.103</span>]</span><br><span class="line"><span class="symbol">ok:</span> [backup_192<span class="meta">.168</span><span class="meta">.1</span><span class="meta">.108</span>]</span><br><span class="line"></span><br><span class="line">TASK [copy ssh key to remote servers] ****************************************************************</span><br><span class="line"><span class="symbol">changed:</span> [web2_192<span class="meta">.168</span><span class="meta">.1</span><span class="meta">.102</span>]</span><br><span class="line"><span class="symbol">changed:</span> [lb1_192<span class="meta">.168</span><span class="meta">.1</span><span class="meta">.105</span>]</span><br><span class="line"><span class="symbol">changed:</span> [db1_192<span class="meta">.168</span><span class="meta">.1</span><span class="meta">.103</span>]</span><br><span class="line"><span class="symbol">changed:</span> [web1_192<span class="meta">.168</span><span class="meta">.1</span><span class="meta">.101</span>]</span><br><span class="line"><span class="symbol">changed:</span> [lb2_192<span class="meta">.168</span><span class="meta">.1</span><span class="meta">.106</span>]</span><br><span class="line"><span class="symbol">changed:</span> [Manager_192<span class="meta">.168</span><span class="meta">.1</span><span class="meta">.100</span>]</span><br><span class="line"><span class="symbol">changed:</span> [db2_192<span class="meta">.168</span><span class="meta">.1</span><span class="meta">.104</span>]</span><br><span class="line"><span class="symbol">changed:</span> [nfs_192<span class="meta">.168</span><span class="meta">.1</span><span class="meta">.107</span>]</span><br><span class="line"><span class="symbol">changed:</span> [backup_192<span class="meta">.168</span><span class="meta">.1</span><span class="meta">.108</span>]</span><br><span class="line"></span><br><span class="line">PLAY RECAP *******************************************************************************************</span><br><span class="line">Manager_192<span class="meta">.168</span><span class="meta">.1</span><span class="meta">.100</span>      : ok=<span class="number">2</span>    changed=<span class="number">1</span>    unreachable=<span class="number">0</span>    failed=<span class="number">0</span>   </span><br><span class="line">backup_192<span class="meta">.168</span><span class="meta">.1</span><span class="meta">.108</span>       : ok=<span class="number">2</span>    changed=<span class="number">1</span>    unreachable=<span class="number">0</span>    failed=<span class="number">0</span>   </span><br><span class="line">db1_192<span class="meta">.168</span><span class="meta">.1</span><span class="meta">.103</span>          : ok=<span class="number">2</span>    changed=<span class="number">1</span>    unreachable=<span class="number">0</span>    failed=<span class="number">0</span>   </span><br><span class="line">db2_192<span class="meta">.168</span><span class="meta">.1</span><span class="meta">.104</span>          : ok=<span class="number">2</span>    changed=<span class="number">1</span>    unreachable=<span class="number">0</span>    failed=<span class="number">0</span>   </span><br><span class="line">lb1_192<span class="meta">.168</span><span class="meta">.1</span><span class="meta">.105</span>          : ok=<span class="number">2</span>    changed=<span class="number">1</span>    unreachable=<span class="number">0</span>    failed=<span class="number">0</span>   </span><br><span class="line">lb2_192<span class="meta">.168</span><span class="meta">.1</span><span class="meta">.106</span>          : ok=<span class="number">2</span>    changed=<span class="number">1</span>    unreachable=<span class="number">0</span>    failed=<span class="number">0</span>   </span><br><span class="line">nfs_192<span class="meta">.168</span><span class="meta">.1</span><span class="meta">.107</span>          : ok=<span class="number">2</span>    changed=<span class="number">1</span>    unreachable=<span class="number">0</span>    failed=<span class="number">0</span>   </span><br><span class="line">web1_192<span class="meta">.168</span><span class="meta">.1</span><span class="meta">.101</span>         : ok=<span class="number">2</span>    changed=<span class="number">1</span>    unreachable=<span class="number">0</span>    failed=<span class="number">0</span>   </span><br><span class="line">web2_192<span class="meta">.168</span><span class="meta">.1</span><span class="meta">.102</span>         : ok=<span class="number">2</span>    changed=<span class="number">1</span>    unreachable=<span class="number">0</span>    failed=<span class="number">0</span></span><br></pre></td></tr></table></figure>
+<p>ansible 批量管理测试</p>
+<figure class="highlight x86asm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">[root@manager ~]# ansible all -m command -a <span class="string">"who"</span> </span><br><span class="line">web2_192<span class="meta">.168</span><span class="meta">.1</span><span class="meta">.102</span> | SUCCESS | rc=<span class="number">0</span> &gt;&gt;</span><br><span class="line">root     pts/<span class="number">0</span>        <span class="number">2018</span>-<span class="number">08</span>-<span class="number">10</span> <span class="number">20</span>:<span class="number">42</span> (<span class="number">192.168</span><span class="meta">.1</span><span class="meta">.100</span>)</span><br><span class="line"></span><br><span class="line">db1_192<span class="meta">.168</span><span class="meta">.1</span><span class="meta">.103</span> | SUCCESS | rc=<span class="number">0</span> &gt;&gt;</span><br><span class="line">root     pts/<span class="number">0</span>        <span class="number">2018</span>-<span class="number">08</span>-<span class="number">10</span> <span class="number">20</span>:<span class="number">42</span> (<span class="number">192.168</span><span class="meta">.1</span><span class="meta">.100</span>)</span><br><span class="line"></span><br><span class="line">web1_192<span class="meta">.168</span><span class="meta">.1</span><span class="meta">.101</span> | SUCCESS | rc=<span class="number">0</span> &gt;&gt;</span><br><span class="line">root     pts/<span class="number">0</span>        <span class="number">2018</span>-<span class="number">08</span>-<span class="number">10</span> <span class="number">20</span>:<span class="number">42</span> (<span class="number">192.168</span><span class="meta">.1</span><span class="meta">.100</span>)</span><br><span class="line"></span><br><span class="line">lb1_192<span class="meta">.168</span><span class="meta">.1</span><span class="meta">.105</span> | SUCCESS | rc=<span class="number">0</span> &gt;&gt;</span><br><span class="line">root     pts/<span class="number">0</span>        <span class="number">2018</span>-<span class="number">08</span>-<span class="number">10</span> <span class="number">20</span>:<span class="number">42</span> (<span class="number">192.168</span><span class="meta">.1</span><span class="meta">.100</span>)</span><br><span class="line"></span><br><span class="line">lb2_192<span class="meta">.168</span><span class="meta">.1</span><span class="meta">.106</span> | SUCCESS | rc=<span class="number">0</span> &gt;&gt;</span><br><span class="line">root     pts/<span class="number">0</span>        <span class="number">2018</span>-<span class="number">08</span>-<span class="number">10</span> <span class="number">20</span>:<span class="number">42</span> (<span class="number">192.168</span><span class="meta">.1</span><span class="meta">.100</span>)</span><br><span class="line"></span><br><span class="line">db2_192<span class="meta">.168</span><span class="meta">.1</span><span class="meta">.104</span> | SUCCESS | rc=<span class="number">0</span> &gt;&gt;</span><br><span class="line">apple    pts/<span class="number">0</span>        <span class="number">2018</span>-<span class="number">08</span>-<span class="number">10</span> <span class="number">19</span>:<span class="number">01</span> (<span class="number">192.168</span><span class="meta">.1</span><span class="meta">.2</span>)</span><br><span class="line">root     pts/<span class="number">1</span>        <span class="number">2018</span>-<span class="number">08</span>-<span class="number">10</span> <span class="number">20</span>:<span class="number">42</span> (<span class="number">192.168</span><span class="meta">.1</span><span class="meta">.100</span>)</span><br><span class="line"></span><br><span class="line">nfs_192<span class="meta">.168</span><span class="meta">.1</span><span class="meta">.107</span> | SUCCESS | rc=<span class="number">0</span> &gt;&gt;</span><br><span class="line">apple    pts/<span class="number">0</span>        <span class="number">2018</span>-<span class="number">08</span>-<span class="number">10</span> <span class="number">18</span>:<span class="number">56</span> (<span class="number">192.168</span><span class="meta">.1</span><span class="meta">.2</span>)</span><br><span class="line">root     pts/<span class="number">1</span>        <span class="number">2018</span>-<span class="number">08</span>-<span class="number">10</span> <span class="number">20</span>:<span class="number">42</span> (<span class="number">192.168</span><span class="meta">.1</span><span class="meta">.100</span>)</span><br><span class="line"></span><br><span class="line">backup_192<span class="meta">.168</span><span class="meta">.1</span><span class="meta">.108</span> | SUCCESS | rc=<span class="number">0</span> &gt;&gt;</span><br><span class="line">root     pts/<span class="number">0</span>        <span class="number">2018</span>-<span class="number">08</span>-<span class="number">10</span> <span class="number">20</span>:<span class="number">42</span> (<span class="number">192.168</span><span class="meta">.1</span><span class="meta">.100</span>)</span><br><span class="line"></span><br><span class="line">Manager_192<span class="meta">.168</span><span class="meta">.1</span><span class="meta">.100</span> | SUCCESS | rc=<span class="number">0</span> &gt;&gt;</span><br><span class="line">root     tty1         <span class="number">2018</span>-<span class="number">08</span>-<span class="number">10</span> <span class="number">19</span>:<span class="number">36</span></span><br><span class="line">root     pts/<span class="number">0</span>        <span class="number">2018</span>-<span class="number">08</span>-<span class="number">10</span> <span class="number">19</span>:<span class="number">56</span> (<span class="number">192.168</span><span class="meta">.1</span><span class="meta">.2</span>)</span><br><span class="line">root     pts/<span class="number">9</span>        <span class="number">2018</span>-<span class="number">08</span>-<span class="number">10</span> <span class="number">20</span>:<span class="number">42</span> (manager)</span><br></pre></td></tr></table></figure>
+<h2 id="使用-Ansible-将-hosts-文件发送到集群各主机"><a href="#使用-Ansible-将-hosts-文件发送到集群各主机" class="headerlink" title="使用 Ansible 将 hosts 文件发送到集群各主机"></a>使用 Ansible 将 hosts 文件发送到集群各主机</h2><p>将管理主机的 hosts 文件发送到各主机</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br></pre></td><td class="code"><pre><span class="line">[root<span class="meta">@manager</span> ~]# ansible all -m copy -a <span class="string">"src=/etc/hosts dest=/etc/hosts backup=yes"</span></span><br><span class="line">web2_192<span class="number">.168</span><span class="number">.1</span><span class="number">.102</span> | <span class="function"><span class="params">SUCCESS</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="string">"backup_file"</span>: <span class="string">"/etc/hosts.9181.2018-08-10@20:46:34~"</span>, </span><br><span class="line">    <span class="string">"changed"</span>: <span class="literal">true</span>, </span><br><span class="line">    <span class="string">"checksum"</span>: <span class="string">"a269a776f9f568820b6e66ad5adf45f17c45944e"</span>, </span><br><span class="line">    <span class="string">"dest"</span>: <span class="string">"/etc/hosts"</span>, </span><br><span class="line">    <span class="string">"gid"</span>: <span class="number">0</span>, </span><br><span class="line">    <span class="string">"group"</span>: <span class="string">"root"</span>, </span><br><span class="line">    <span class="string">"md5sum"</span>: <span class="string">"63c184771da745888b5f11374f7dc1b7"</span>, </span><br><span class="line">    <span class="string">"mode"</span>: <span class="string">"0644"</span>, </span><br><span class="line">    <span class="string">"owner"</span>: <span class="string">"root"</span>, </span><br><span class="line">    <span class="string">"secontext"</span>: <span class="string">"system_u:object_r:net_conf_t:s0"</span>, </span><br><span class="line">    <span class="string">"size"</span>: <span class="number">329</span>, </span><br><span class="line">    <span class="string">"src"</span>: <span class="string">"/root/.ansible/tmp/ansible-tmp-1533905192.85-32791558587807/source"</span>, </span><br><span class="line">    <span class="string">"state"</span>: <span class="string">"file"</span>, </span><br><span class="line">    <span class="string">"uid"</span>: <span class="number">0</span></span><br><span class="line">&#125;</span><br><span class="line">db1_192<span class="number">.168</span><span class="number">.1</span><span class="number">.103</span> | <span class="function"><span class="params">SUCCESS</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="string">"backup_file"</span>: <span class="string">"/etc/hosts.9183.2018-08-10@20:46:34~"</span>, </span><br><span class="line">    <span class="string">"changed"</span>: <span class="literal">true</span>, </span><br><span class="line">    <span class="string">"checksum"</span>: <span class="string">"a269a776f9f568820b6e66ad5adf45f17c45944e"</span>, </span><br><span class="line">    <span class="string">"dest"</span>: <span class="string">"/etc/hosts"</span>, </span><br><span class="line">    <span class="string">"gid"</span>: <span class="number">0</span>, </span><br><span class="line">    <span class="string">"group"</span>: <span class="string">"root"</span>, </span><br><span class="line">    <span class="string">"md5sum"</span>: <span class="string">"63c184771da745888b5f11374f7dc1b7"</span>, </span><br><span class="line">    <span class="string">"mode"</span>: <span class="string">"0644"</span>, </span><br><span class="line">    <span class="string">"owner"</span>: <span class="string">"root"</span>, </span><br><span class="line">    <span class="string">"secontext"</span>: <span class="string">"system_u:object_r:net_conf_t:s0"</span>, </span><br><span class="line">    <span class="string">"size"</span>: <span class="number">329</span>, </span><br><span class="line">    <span class="string">"src"</span>: <span class="string">"/root/.ansible/tmp/ansible-tmp-1533905192.92-144594355867686/source"</span>, </span><br><span class="line">    <span class="string">"state"</span>: <span class="string">"file"</span>, </span><br><span class="line">    <span class="string">"uid"</span>: <span class="number">0</span></span><br><span class="line">&#125;</span><br><span class="line">lb1_192<span class="number">.168</span><span class="number">.1</span><span class="number">.105</span> | <span class="function"><span class="params">SUCCESS</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="string">"backup_file"</span>: <span class="string">"/etc/hosts.1768.2018-08-10@20:46:35~"</span>, </span><br><span class="line">    <span class="string">"changed"</span>: <span class="literal">true</span>, </span><br><span class="line">    <span class="string">"checksum"</span>: <span class="string">"a269a776f9f568820b6e66ad5adf45f17c45944e"</span>, </span><br><span class="line">    <span class="string">"dest"</span>: <span class="string">"/etc/hosts"</span>, </span><br><span class="line">    <span class="string">"gid"</span>: <span class="number">0</span>, </span><br><span class="line">    <span class="string">"group"</span>: <span class="string">"root"</span>, </span><br><span class="line">    <span class="string">"md5sum"</span>: <span class="string">"63c184771da745888b5f11374f7dc1b7"</span>, </span><br><span class="line">    <span class="string">"mode"</span>: <span class="string">"0644"</span>, </span><br><span class="line">    <span class="string">"owner"</span>: <span class="string">"root"</span>, </span><br><span class="line">    <span class="string">"secontext"</span>: <span class="string">"system_u:object_r:net_conf_t:s0"</span>, </span><br><span class="line">    <span class="string">"size"</span>: <span class="number">329</span>, </span><br><span class="line">    <span class="string">"src"</span>: <span class="string">"/root/.ansible/tmp/ansible-tmp-1533905192.84-57218625796926/source"</span>, </span><br><span class="line">    <span class="string">"state"</span>: <span class="string">"file"</span>, </span><br><span class="line">    <span class="string">"uid"</span>: <span class="number">0</span></span><br><span class="line">&#125;</span><br><span class="line">web1_192<span class="number">.168</span><span class="number">.1</span><span class="number">.101</span> | <span class="function"><span class="params">SUCCESS</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="string">"backup_file"</span>: <span class="string">"/etc/hosts.9186.2018-08-10@20:46:35~"</span>, </span><br><span class="line">    <span class="string">"changed"</span>: <span class="literal">true</span>, </span><br><span class="line">    <span class="string">"checksum"</span>: <span class="string">"a269a776f9f568820b6e66ad5adf45f17c45944e"</span>, </span><br><span class="line">    <span class="string">"dest"</span>: <span class="string">"/etc/hosts"</span>, </span><br><span class="line">    <span class="string">"gid"</span>: <span class="number">0</span>, </span><br><span class="line">    <span class="string">"group"</span>: <span class="string">"root"</span>, </span><br><span class="line">    <span class="string">"md5sum"</span>: <span class="string">"63c184771da745888b5f11374f7dc1b7"</span>, </span><br><span class="line">    <span class="string">"mode"</span>: <span class="string">"0644"</span>, </span><br><span class="line">    <span class="string">"owner"</span>: <span class="string">"root"</span>, </span><br><span class="line">    <span class="string">"secontext"</span>: <span class="string">"system_u:object_r:net_conf_t:s0"</span>, </span><br><span class="line">    <span class="string">"size"</span>: <span class="number">329</span>, </span><br><span class="line">    <span class="string">"src"</span>: <span class="string">"/root/.ansible/tmp/ansible-tmp-1533905192.79-195293311641322/source"</span>, </span><br><span class="line">    <span class="string">"state"</span>: <span class="string">"file"</span>, </span><br><span class="line">    <span class="string">"uid"</span>: <span class="number">0</span></span><br><span class="line">&#125;</span><br><span class="line">lb2_192<span class="number">.168</span><span class="number">.1</span><span class="number">.106</span> | <span class="function"><span class="params">SUCCESS</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="string">"backup_file"</span>: <span class="string">"/etc/hosts.1765.2018-08-10@20:46:35~"</span>, </span><br><span class="line">    <span class="string">"changed"</span>: <span class="literal">true</span>, </span><br><span class="line">    <span class="string">"checksum"</span>: <span class="string">"a269a776f9f568820b6e66ad5adf45f17c45944e"</span>, </span><br><span class="line">    <span class="string">"dest"</span>: <span class="string">"/etc/hosts"</span>, </span><br><span class="line">    <span class="string">"gid"</span>: <span class="number">0</span>, </span><br><span class="line">    <span class="string">"group"</span>: <span class="string">"root"</span>, </span><br><span class="line">    <span class="string">"md5sum"</span>: <span class="string">"63c184771da745888b5f11374f7dc1b7"</span>, </span><br><span class="line">    <span class="string">"mode"</span>: <span class="string">"0644"</span>, </span><br><span class="line">    <span class="string">"owner"</span>: <span class="string">"root"</span>, </span><br><span class="line">    <span class="string">"secontext"</span>: <span class="string">"system_u:object_r:net_conf_t:s0"</span>, </span><br><span class="line">    <span class="string">"size"</span>: <span class="number">329</span>, </span><br><span class="line">    <span class="string">"src"</span>: <span class="string">"/root/.ansible/tmp/ansible-tmp-1533905192.88-65052280278963/source"</span>, </span><br><span class="line">    <span class="string">"state"</span>: <span class="string">"file"</span>, </span><br><span class="line">    <span class="string">"uid"</span>: <span class="number">0</span></span><br><span class="line">&#125;</span><br><span class="line">backup_192<span class="number">.168</span><span class="number">.1</span><span class="number">.108</span> | <span class="function"><span class="params">SUCCESS</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="string">"backup_file"</span>: <span class="string">"/etc/hosts.1752.2018-08-10@20:46:36~"</span>, </span><br><span class="line">    <span class="string">"changed"</span>: <span class="literal">true</span>, </span><br><span class="line">    <span class="string">"checksum"</span>: <span class="string">"a269a776f9f568820b6e66ad5adf45f17c45944e"</span>, </span><br><span class="line">    <span class="string">"dest"</span>: <span class="string">"/etc/hosts"</span>, </span><br><span class="line">    <span class="string">"gid"</span>: <span class="number">0</span>, </span><br><span class="line">    <span class="string">"group"</span>: <span class="string">"root"</span>, </span><br><span class="line">    <span class="string">"md5sum"</span>: <span class="string">"63c184771da745888b5f11374f7dc1b7"</span>, </span><br><span class="line">    <span class="string">"mode"</span>: <span class="string">"0644"</span>, </span><br><span class="line">    <span class="string">"owner"</span>: <span class="string">"root"</span>, </span><br><span class="line">    <span class="string">"secontext"</span>: <span class="string">"system_u:object_r:net_conf_t:s0"</span>, </span><br><span class="line">    <span class="string">"size"</span>: <span class="number">329</span>, </span><br><span class="line">    <span class="string">"src"</span>: <span class="string">"/root/.ansible/tmp/ansible-tmp-1533905195.21-167563684240645/source"</span>, </span><br><span class="line">    <span class="string">"state"</span>: <span class="string">"file"</span>, </span><br><span class="line">    <span class="string">"uid"</span>: <span class="number">0</span></span><br><span class="line">&#125;</span><br><span class="line">db2_192<span class="number">.168</span><span class="number">.1</span><span class="number">.104</span> | <span class="function"><span class="params">SUCCESS</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="string">"backup_file"</span>: <span class="string">"/etc/hosts.1762.2018-08-10@20:46:36~"</span>, </span><br><span class="line">    <span class="string">"changed"</span>: <span class="literal">true</span>, </span><br><span class="line">    <span class="string">"checksum"</span>: <span class="string">"a269a776f9f568820b6e66ad5adf45f17c45944e"</span>, </span><br><span class="line">    <span class="string">"dest"</span>: <span class="string">"/etc/hosts"</span>, </span><br><span class="line">    <span class="string">"gid"</span>: <span class="number">0</span>, </span><br><span class="line">    <span class="string">"group"</span>: <span class="string">"root"</span>, </span><br><span class="line">    <span class="string">"md5sum"</span>: <span class="string">"63c184771da745888b5f11374f7dc1b7"</span>, </span><br><span class="line">    <span class="string">"mode"</span>: <span class="string">"0644"</span>, </span><br><span class="line">    <span class="string">"owner"</span>: <span class="string">"root"</span>, </span><br><span class="line">    <span class="string">"secontext"</span>: <span class="string">"system_u:object_r:net_conf_t:s0"</span>, </span><br><span class="line">    <span class="string">"size"</span>: <span class="number">329</span>, </span><br><span class="line">    <span class="string">"src"</span>: <span class="string">"/root/.ansible/tmp/ansible-tmp-1533905195.08-127441559512705/source"</span>, </span><br><span class="line">    <span class="string">"state"</span>: <span class="string">"file"</span>, </span><br><span class="line">    <span class="string">"uid"</span>: <span class="number">0</span></span><br><span class="line">&#125;</span><br><span class="line">nfs_192<span class="number">.168</span><span class="number">.1</span><span class="number">.107</span> | <span class="function"><span class="params">SUCCESS</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="string">"backup_file"</span>: <span class="string">"/etc/hosts.1748.2018-08-10@20:46:36~"</span>, </span><br><span class="line">    <span class="string">"changed"</span>: <span class="literal">true</span>, </span><br><span class="line">    <span class="string">"checksum"</span>: <span class="string">"a269a776f9f568820b6e66ad5adf45f17c45944e"</span>, </span><br><span class="line">    <span class="string">"dest"</span>: <span class="string">"/etc/hosts"</span>, </span><br><span class="line">    <span class="string">"gid"</span>: <span class="number">0</span>, </span><br><span class="line">    <span class="string">"group"</span>: <span class="string">"root"</span>, </span><br><span class="line">    <span class="string">"md5sum"</span>: <span class="string">"63c184771da745888b5f11374f7dc1b7"</span>, </span><br><span class="line">    <span class="string">"mode"</span>: <span class="string">"0644"</span>, </span><br><span class="line">    <span class="string">"owner"</span>: <span class="string">"root"</span>, </span><br><span class="line">    <span class="string">"secontext"</span>: <span class="string">"system_u:object_r:net_conf_t:s0"</span>, </span><br><span class="line">    <span class="string">"size"</span>: <span class="number">329</span>, </span><br><span class="line">    <span class="string">"src"</span>: <span class="string">"/root/.ansible/tmp/ansible-tmp-1533905195.19-100411294145816/source"</span>, </span><br><span class="line">    <span class="string">"state"</span>: <span class="string">"file"</span>, </span><br><span class="line">    <span class="string">"uid"</span>: <span class="number">0</span></span><br><span class="line">&#125;</span><br><span class="line">Manager_192<span class="number">.168</span><span class="number">.1</span><span class="number">.100</span> | <span class="function"><span class="params">SUCCESS</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="string">"changed"</span>: <span class="literal">false</span>, </span><br><span class="line">    <span class="string">"checksum"</span>: <span class="string">"a269a776f9f568820b6e66ad5adf45f17c45944e"</span>, </span><br><span class="line">    <span class="string">"gid"</span>: <span class="number">0</span>, </span><br><span class="line">    <span class="string">"group"</span>: <span class="string">"root"</span>, </span><br><span class="line">    <span class="string">"mode"</span>: <span class="string">"0644"</span>, </span><br><span class="line">    <span class="string">"owner"</span>: <span class="string">"root"</span>, </span><br><span class="line">    <span class="string">"path"</span>: <span class="string">"/etc/hosts"</span>, </span><br><span class="line">    <span class="string">"secontext"</span>: <span class="string">"system_u:object_r:net_conf_t:s0"</span>, </span><br><span class="line">    <span class="string">"size"</span>: <span class="number">329</span>, </span><br><span class="line">    <span class="string">"state"</span>: <span class="string">"file"</span>, </span><br><span class="line">    <span class="string">"uid"</span>: <span class="number">0</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="使用-Ansible-执行系统初始化脚本"><a href="#使用-Ansible-执行系统初始化脚本" class="headerlink" title="使用 Ansible 执行系统初始化脚本"></a>使用 Ansible 执行系统初始化脚本</h2><p>编写服务器基本配置脚本</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">vi server_init.sh</span><br><span class="line"><span class="meta">#! /bin/bash</span></span><br><span class="line"><span class="comment"># author:Manson</span></span><br><span class="line"><span class="comment"># 2018-08-06</span></span><br><span class="line"><span class="comment"># description:针对 CentOS7 服务器初始化后的优化脚本</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="title">ServerSystemOptimize</span></span>()&#123;</span><br><span class="line">	<span class="built_in">echo</span> <span class="string">'------The script begins to try to make a basic optimization of the server------'</span> &amp;&amp; sleep 2</span><br><span class="line">	systemctl stop firewalld &amp;&gt; /dev/null &amp;&amp; <span class="built_in">echo</span> <span class="string">'***The firewall has been closed***'</span> &amp;&amp; sleep 1</span><br><span class="line">	setenforce 0 &amp;&gt; /dev/null &amp;&amp; <span class="built_in">echo</span> <span class="string">"***SELinux has been closed***"</span> || <span class="built_in">echo</span> <span class="string">"***SELinux unstarted***"</span></span><br><span class="line">	systemctl <span class="built_in">disable</span> firewalld &amp;&gt; /dev/null &amp;&amp; <span class="built_in">echo</span> <span class="string">"***Firewall has been remove at boot up***"</span> &amp;&amp; sleep 1</span><br><span class="line">	sed -i <span class="string">'7 s/enforcing/disabled/g'</span> /etc/selinux/config &amp;&amp; <span class="built_in">echo</span> <span class="string">"***SELinux has been remove at boot up***"</span> &amp;&amp; sleep 1</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="title">YumBuild</span></span>()&#123;</span><br><span class="line">	<span class="built_in">echo</span> <span class="string">'------The script begins to try to optimize the software repository------'</span></span><br><span class="line">	yum -y install epel-release &amp;&gt; /dev/null &amp;&amp; <span class="built_in">echo</span> <span class="string">'***Installed epel-release***'</span></span><br><span class="line">	yum -y clean all &amp;&gt; /dev/null &amp;&amp; <span class="built_in">echo</span> <span class="string">'***cleaned all yum cache***'</span></span><br><span class="line">	yum makecache &amp;&gt; /dev/null &amp;&amp; <span class="built_in">echo</span> <span class="string">'***Success to make yum Cache***'</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">echo</span> <span class="string">"------Script is testing network connectivity------"</span></span><br><span class="line">ping www.baidu.com -c2 &amp;&gt; /dev/null || (<span class="built_in">echo</span> <span class="string">"***No Internet connection, please check the network connection or dns config***"</span> &amp;&amp; <span class="built_in">exit</span>)</span><br><span class="line">ServerSystemOptimize</span><br><span class="line">YumBuild</span><br></pre></td></tr></table></figure>
+<p>使用 ansible 发送初始化脚本</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">[root<span class="meta">@manager</span> ~]# ansible all -m copy -a <span class="string">"src=/root/server_init.sh dest=/root/scripts/"</span></span><br><span class="line">db1_192<span class="number">.168</span><span class="number">.1</span><span class="number">.103</span> | <span class="function"><span class="params">SUCCESS</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="string">"changed"</span>: <span class="literal">true</span>, </span><br><span class="line">    <span class="string">"checksum"</span>: <span class="string">"3917fd72e1e0ae83ae430d433e82566cdda5f74f"</span>, </span><br><span class="line">    <span class="string">"dest"</span>: <span class="string">"/root/scripts/server_init.sh"</span>, </span><br><span class="line">    <span class="string">"gid"</span>: <span class="number">0</span>, </span><br><span class="line">    <span class="string">"group"</span>: <span class="string">"root"</span>, </span><br><span class="line">    <span class="string">"md5sum"</span>: <span class="string">"04352bb93236fb89de99a89679f818d9"</span>, </span><br><span class="line">    <span class="string">"mode"</span>: <span class="string">"0644"</span>, </span><br><span class="line">    <span class="string">"owner"</span>: <span class="string">"root"</span>, </span><br><span class="line">    <span class="string">"secontext"</span>: <span class="string">"system_u:object_r:admin_home_t:s0"</span>, </span><br><span class="line">    <span class="string">"size"</span>: <span class="number">1191</span>, </span><br><span class="line">    <span class="string">"src"</span>: <span class="string">"/root/.ansible/tmp/ansible-tmp-1533905606.52-173502493043772/source"</span>, </span><br><span class="line">    <span class="string">"state"</span>: <span class="string">"file"</span>, </span><br><span class="line">    <span class="string">"uid"</span>: <span class="number">0</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>使用 ansible 批量执行脚本</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">[root@manager ~]# ansible all -m shell -a <span class="string">"sh /root/scripts/server_init.sh"</span></span><br><span class="line">lb2_192.168.1.106 | SUCCESS | <span class="attribute">rc</span>=0 &gt;&gt;</span><br><span class="line">------Script is testing<span class="built_in"> network </span>connectivity------</span><br><span class="line">------The<span class="built_in"> script </span>begins <span class="keyword">to</span> try <span class="keyword">to</span> make a basic optimization of the server------</span><br><span class="line">***The<span class="built_in"> firewall </span>has been closed***</span><br><span class="line">***SELinux has been closed***</span><br><span class="line">**<span class="number">*F</span>irewall has been <span class="builtin-name">remove</span> at boot up***</span><br><span class="line">***SELinux has been <span class="builtin-name">remove</span> at boot up***</span><br><span class="line">------The<span class="built_in"> script </span>begins <span class="keyword">to</span> try <span class="keyword">to</span> optimize the software repository------</span><br><span class="line">***Installed epel-release***</span><br><span class="line">**<span class="number">*c</span>leaned all yum cache***</span><br><span class="line">***Success <span class="keyword">to</span> make yum Cache***</span><br></pre></td></tr></table></figure>
+<p>总结：</p>
+<ul>
+<li>发送公钥使用的是 ansible 的authorized_keys模块，关键选项有两个：key 和 user</li>
+<li>执行命令使用的是 ansible 的 shell 模块</li>
+<li>发送文件使用的是 ansible 的 copy 模块</li>
+<li>发送ssh 使用的 ansible playbook</li>
+</ul>
+
+
+                <hr>
+
+                
+
+                <ul class="pager">
+                    
+                        <li class="previous">
+                            <a href="/2019/03/18/Nginx-1-编译安装和部署静态网站/" data-toggle="tooltip" data-placement="top" title="Nginx(1)-编译安装和部署静态网站">&larr; Previous Post</a>
+                        </li>
+                    
+                    
+                        <li class="next">
+                            <a href="/2018/07/25/ZABBIX/" data-toggle="tooltip" data-placement="top" title="ZABBIX">Next Post &rarr;</a>
+                        </li>
+                    
+                </ul>
+
+                
+
+                
+                <!-- disqus 评论框 start -->
+                <div class="comment">
+                    <div id="disqus_thread" class="disqus-thread"></div>
+                </div>
+                <!-- disqus 评论框 end -->
+                
+
+            </div>
+    <!-- Side Catalog Container -->
+        
+
+    <!-- Sidebar Container -->
+
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <!-- no hr -->
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                       
+                    </div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>FRIENDS</h5>
+                <ul class="list-inline">
+
+                    
+                        <li><a href="#" target="_blank">留着</a></li>
+                    
+                        <li><a href="#" target="_blank">也留着</a></li>
+                    
+                </ul>
+                
+            </div>
+
+        </div>
+    </div>
+</article>
+
+
+
+
+<!-- disqus 公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = "hexo-theme-huxblog";
+    var disqus_identifier = "https://simontage.github.io/2018/08/10/使用-Ansible-批量发送公钥/";
+    var disqus_url = "https://simontage.github.io/2018/08/10/使用-Ansible-批量发送公钥/";
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<!-- disqus 公共JS代码 end -->
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("https://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'always',
+          placement: 'right',
+          icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+
+    <!-- Footer -->
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                
+                
+                
+
+                
+
+                
+
+                
+
+                
+
+                </ul>
+                <p class="copyright text-muted">
+                    Copyright &copy; Manson&#39;s Notes 2019 
+                    <br>
+                    Theme by <a href="http://huangxuan.me">Hux</a> 
+                    <span style="display: inline-block; margin: 0 5px;">
+                        <i class="fa fa-heart"></i>
+                    </span> 
+                    Ported by <a href="http://blog.kaijun.rocks">Kaijun</a> | 
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="91px" height="20px"
+                        src="https://ghbtns.com/github-btn.html?user=kaijun&repo=hexo-theme-huxblog&type=star&count=true" >
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js"></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js"></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/hux-blog.min.js"></script>
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/    
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("https://simontage.github.io/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("https://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+<script>
+    // dynamic User by Hux
+    var _gaId = 'UA-49627206-1';
+    var _gaDomain = 'null';
+
+    // Originial
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', _gaId, _gaDomain);
+    ga('send', 'pageview');
+</script>
+
+
+
+
+<!-- Baidu Tongji -->
+
+
+<!-- Side Catalog -->
+
+
+
+
+
+<!-- Image to hack wechat -->
+<img src="https://simontage.github.io/img/icon_wechat.png" width="0" height="0" />
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>
