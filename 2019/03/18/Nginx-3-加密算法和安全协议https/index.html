@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="keyword"  content="">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>
+        
+          Nginx(3)-构建 https 站点 - Manson的备忘录 | Manson&#39;s Notes
+        
+    </title>
+
+    <link rel="canonical" href="https://simontage.github.io/2019/03/18/Nginx-3-加密算法和安全协议https/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/hux-blog.min.css">
+
+    <!-- Pygments Highlight CSS -->
+    <link rel="stylesheet" href="/css/highlight.css">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="https://cdn.staticfile.org/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- Hux Delete, sad but pending in China
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
+    css'>
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+</head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Manson&#39;s Notes</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'s height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+
+                    
+
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/archives/">Archives</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/about/">About</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/tags/">Tags</a>
+                        </li>
+                        
+                    
+                    
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Main Content -->
+    
+<!-- Image to hack wechat -->
+<!-- <img src="https://simontage.github.io/img/icon_wechat.png" width="0" height="0"> -->
+<!-- <img src="{{ site.baseurl }}/{% if page.header-img %}{{ page.header-img }}{% else %}{{ site.header-img }}{% endif %}" width="0" height="0"> -->
+
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        background-image: url('nginx_header.png')
+    }
+</style>
+<header class="intro-header" >
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                          <a class="tag" href="/tags/#Nginx" title="Nginx">Nginx</a>
+                        
+                    </div>
+                    <h1>Nginx(3)-构建 https 站点</h1>
+                    <h2 class="subheading"></h2>
+                    <span class="meta">
+                        Posted by Manson on
+                        2019-03-18
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+    <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+                <h2 id="对称加密"><a href="#对称加密" class="headerlink" title="对称加密"></a>对称加密</h2><p>对称加密中加密和解密使用相同的密钥，加解密速度快，算法公开，计算量小。</p>
+<p><img src="03-01-对称加密.png" alt="对称加密"></p>
+<p>使用对称加密，交易双方都使用同样钥匙，安全性得不到保证；每对用户每次使用对称加密算法时，都需要使用其他人不知道的惟一钥匙，这会使得发收信双方所拥有的钥匙数量呈几何级数增长，密钥管理成为用户的负担。对称加密算法在分布式网络系统上使用较为困难，主要是因为密钥管理困难，使用成本较高。</p>
+<p>常见的对称加密算法：</p>
+<ul>
+<li>DES（Data Encryption Standard）</li>
+<li>3DES</li>
+<li>AES（Advanced Encryption Standard）密钥长度可选128/192/258/384/512 bits</li>
+<li>RC2、RC4、RC5、Blowfish 等</li>
+</ul>
+<h2 id="非对称加密"><a href="#非对称加密" class="headerlink" title="非对称加密"></a>非对称加密</h2><p>非对称加密，密钥成对出现，一公一私。公钥（public key）公开给所有人，而私钥自己保存，必须保证其私密性，如对私钥加密或设置权限。</p>
+<p><img src="https://blog-1257171343.cos.ap-chengdu.myqcloud.com/03-01-%E9%9D%9E%E5%AF%B9%E7%A7%B0%E5%8A%A0%E5%AF%86.png" alt="非对称加密"></p>
+<p>Bob将信息使用 Alice 的公钥加密后发送给Alice，Alice 使用私钥解密加密的文档。非对称加密同样也可以认证身份，Alice 用自己的私钥加密信息，如果 Bob 能用 Alice 的公钥解密，则身份认证成功。</p>
+<p>非对称加密的三种用途：</p>
+<ol>
+<li>数字签名：用于让接收方确认发送方的身份，并确认数据没有篡改</li>
+<li>密钥交换：发送方用对方的公钥加密一个对称密钥，并发送给对方</li>
+<li>数据加密</li>
+</ol>
+<p>常见的非对称加密算法：</p>
+<ul>
+<li>RSA：加密、解密、签名</li>
+<li>DSA：签名</li>
+</ul>
+<p><strong>中间人攻击</strong>Man-in-the-middle attack</p>
+<p><img src="https://blog-1257171343.cos.ap-chengdu.myqcloud.com/03-03-%E4%B8%AD%E9%97%B4%E4%BA%BA%E6%94%BB%E5%87%BB.png" alt=""></p>
+<ul>
+<li>Alice向 Bob 索取他的公钥，Bob 将他的公钥发送给 Alice，并且此时 Mallory 拦截到 Bob 的公钥</li>
+<li>Mallory 将自己的公钥发送给 Alice，Alice 认为 Mallory 的公钥就是 Bob 的公钥</li>
+<li>Alice 用 Mallory 的公钥加密并将信息发送给 Bob，Mallory 拦截 Alice 信息，并解密</li>
+<li>Mallory 将消息查看或者修改后，使用之前拦截的 Bob公钥再次加密后，发送给 Bob</li>
+<li>Bob 收到消息后，相信这是 Alice 发来的信息</li>
+</ul>
+<h2 id="单向加密"><a href="#单向加密" class="headerlink" title="单向加密"></a>单向加密</h2><p>单向加密只能加密，不能解密，又称为提取数据指纹。单向加密的作用是保证数据的完整性，单向加密会定长输入，当原有数据被改变后，输出会完全变化，又称为雪崩效应。</p>
+<p>常见的单向加密算法：</p>
+<ul>
+<li>md5：128bit，按4位二进制组合成一个16进制数，结果由32个十六进制数组成的数字串</li>
+<li>sha1：160bit</li>
+<li>sha224、sha256、sha384、sha512</li>
+</ul>
+<h2 id="PKI公钥基础设施"><a href="#PKI公钥基础设施" class="headerlink" title="PKI公钥基础设施"></a>PKI公钥基础设施</h2><p>PKI 公钥基础设施是抵御中间人攻击的一种认证技术，方法是 PKI 的相互认证的机制。</p>
+<p><img src="https://blog-1257171343.cos.ap-chengdu.myqcloud.com/03-04-pki%20%E5%9F%BA%E7%A1%80%E8%AE%BE%E6%96%BD.png" alt=""></p>
+<p>只要能安全的传输公钥，就能避免中间人攻击。要保证公钥不被替换，就需要一个可信的认证机构对公钥进行公证。</p>
+<p>PKI 的主要的四个组件：</p>
+<ul>
+<li>签证结构：CA，生成数字证书</li>
+<li>登记机构：RA，接收证书请求，验证请求者身份，相当于 CA 的前端代理</li>
+<li>证书吊销列表：CRL，保存证书颁发机构 CA 已经吊销的证书序列号和吊销日期</li>
+<li>PKI 存取库：对用户申请、证书、密钥、CRL 和日志信息进行存储和管理</li>
+</ul>
+<p>CA是有公信力的认证中心。申请者将自己的公钥和个人（站点）信息发送给CA，请求其做认证。CA进行验证后，将申请人的信息和公钥使用Hash算法提取消息摘要，然后CA使用自己的私钥对消息摘要进行加密形成<strong>数字签名</strong>。CA将申请者的个人信息和申请者的公钥加上数字签名形成了<strong>数字证书</strong>，并发送给申请者。X.509定义了证书的结构以及认证协议标准，目前使用的是第三版。</p>
+<p>发送方发送信息时同时也发送自己的数字证书，当接收方收到信息和数字证书时，接收方使用Hash算法对证书中的个人信息和公钥进行提取指纹，然后使用CA的公钥对数字签名进行解密，对比自己生成的消息摘要和解密出来的<strong>数字签名</strong>是否一致，如果一致，则发送方的公钥可用。</p>
+<p>CA本身也有证书来证明自己的身份，并且CA是一种树形结构，高级别的CA会给低级别的CA做信用背书，操作系统和浏览器已经内置了顶层的CA证书。</p>
+<p><strong>CA 参与的安全通信过程：</strong></p>
+<ol>
+<li>首先保证CA为通信双方都认可的机构</li>
+<li>通信双方向CA申请数字证书，包含了各自的公钥</li>
+<li>CA对通信双方进行合法性验证，通过则使用CA的私钥对申请文件进行加密（数字签名），并将数字签名和个人信息整理为一个数字证书</li>
+<li>通信双方下载各自由CA签发的数字证书</li>
+<li>当发送方要发送信息时，首先向接收方请求其数字证书</li>
+<li>接收方利用CA的公钥检查接收到的数字证书是否合法，并得到接收方的公钥</li>
+<li>发送方利用散列函数对明文数据提取指纹，然后通过程序随机生成一个session key，利用这个session key对明文数据进行对称加密，最后发送方用接收方的公钥对session key进行非对称加密</li>
+<li>发送方将自己的证书和加密后的文件（包含session key）发送给接收方</li>
+<li>接收方用CA的公钥验证发送方数字证书的合法性，包括用CA的公钥解密数字证书、用相同的签名算法ID提取指纹并与签名比对、数字证书的有效期、证书的主体名和被访问的主机名或人名是否相同以及证书是否在吊销列表中。<br>如果合法，则利用自己的私钥对session key进行解密得到明文数据，然后利用散列函数对明文数据提取指纹，将自己得到的指纹与发送方发来的指纹进行对比，如果一致，则没有被篡改，安全通信完成。</li>
+</ol>
+<p>以上，对称加密和非对称加密解决了<strong>数据的保密性</strong>，单向加密解决了<strong>数据的完整性</strong>，使用 PKI 解决了<strong>数据的可用性或者是来源合法性</strong>。这样就建立了一个安全的通信。</p>
+<h2 id="SSL-TLS"><a href="#SSL-TLS" class="headerlink" title="SSL/TLS"></a>SSL/TLS</h2><p>1994年，NetScape公司设计了SSL协议（Secure Sockets Layer）的1.0版，但是未发布，设计 SSL 的目的是是为了对http报文进行加密，随后又陆续发布了2.0和3.0。1999年，互联网标准化组织ISOC接替NetScape公司，发布了SSL的升级版<a href="http://en.wikipedia.org/wiki/Secure_Sockets_Layer" target="_blank" rel="noopener">TLS</a> （Transport Layer Security）1.0版，目前 TLS 的版本是TLS 1.3。</p>
+<p>SSL/TLS发生作用的位置在 ISO/OSI 参考模型中的表示层、TCP/IP 模型中的应用层。</p>
+<p><img src="https://blog-1257171343.cos.ap-chengdu.myqcloud.com/03-01-SSL%E6%A8%A1%E5%9E%8B.png" alt=""></p>
+<p>SSL协议分为两部分：Handshake protocol和Record Protocol。</p>
+<p>Handshake Protocol用来在通信双方协商出一个安全的会话密钥以供后续对称加密中使用。Record Protocol则定义了传输的封装格式。</p>
+<p>SSL/TLS协议通信的大概过程：</p>
+<ol>
+<li>客户端向服务端索要公钥（证书）并验证</li>
+<li>双方协商生成“会话密钥”</li>
+<li>后续使用“会话密钥”加密通信</li>
+</ol>
+<p>首先，客户端发出请求（ClientHello），将本地支持的加密套件（Cipher Suit）的列表，也就是本地支持的加密算法、支持的TLS版本、支持的压缩方法发送到服务端。另外产生一个随机数发送到服务端，同时保存在本地一个副本，稍后用于生成会话密钥。</p>
+<p>然后，服务端回应（ServerHello），将服务端的数字证书发送给客户端，并确认使用的加密通信协议版本（也就是安全套件）、服务器生成的随机数、确认使用的加密算法。</p>
+<p>其次，客户端收到服务端证书根据证书链验证真实性后，得到服务器的可信公钥，然后再发送一个新的随机数、编码改变通知（随后的信息都将用双方商定的加密方法和密钥发送）、客户端握手结束通知。</p>
+<p>最后，服务端收到第三个随机数后，计算生成本次会话使用的会话密钥，然后发送编码改变通知和服务器握手结束通知。</p>
+<p>随后的通信使用的http协议，然后使用会话密钥加密。</p>
+<p><strong>TLS 安全密码套件</strong></p>
+<p><img src="https://blog-1257171343.cos.ap-chengdu.myqcloud.com/03-02-TLS%E5%AE%89%E5%85%A8%E5%AF%86%E7%A0%81%E5%A5%97%E4%BB%B6.png" alt=""></p>
+<ul>
+<li>密钥交换</li>
+<li>身份验证</li>
+<li>对称加密算法、强度、分组模式</li>
+<li>签名 hash 算法</li>
+</ul>
+<h2 id="使用私有-CA-实现-https-站点"><a href="#使用私有-CA-实现-https-站点" class="headerlink" title="使用私有 CA 实现 https 站点"></a>使用私有 CA 实现 https 站点</h2><p><strong>建立私有 CA</strong></p>
+<p>1.安装 openssl：<code>yum install openssl -y</code></p>
+<p>2.生成 CA 的密钥对：<code>(umask 077;openssl genrsa -out /etc/pki/CA/private/cakey.pem 2048)</code></p>
+<p><img src="https://blog-1257171343.cos.ap-chengdu.myqcloud.com/03-07-%E7%94%9F%E6%88%90%20CA%20%E5%AF%86%E9%92%A5%E5%AF%B9.png" alt=""></p>
+<p>3.生成自签证书和相关文件：<code>openssl req -new -x509 -key /etc/pki/CA/private/cakey.pem -out /etc/pki/CA/cacert.pem -days 365</code></p>
+<ul>
+<li>req：生成证书签署请求</li>
+<li>-new：新请求</li>
+<li>-key …：指定私钥文件</li>
+<li>-out …/-x509：生成自签署证书的位置和格式</li>
+<li>-days：有效天数</li>
+</ul>
+<p><img src="https://blog-1257171343.cos.ap-chengdu.myqcloud.com/03-08-CA%E7%94%9F%E6%88%90%E8%87%AA%E7%AD%BE%E8%AF%81%E4%B9%A6.png" alt=""></p>
+<p>4.初始化 CA 工作环境：<code>touch /etc/pki/CA/{index.txt,serial};echo 01/etc/pki/CA/serial</code></p>
+<p>与 CA 配置的相关文件是/etc/pki/tls/openssl.cnf ，index.txt是数据库索引文件， serial 是用来记录签证相关信息的。</p>
+<p><strong>站点申请证书</strong></p>
+<p>1.安装 openssl</p>
+<p>2.生成密钥，保存在服务配置文件目录下</p>
+<figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">mkdir <span class="regexp">/usr/</span>nginx-<span class="number">1.14</span>.<span class="number">2</span><span class="regexp">/conf/</span>ssl</span><br><span class="line">ln -s <span class="regexp">/usr/</span>nginx-<span class="number">1.14</span>.<span class="number">2</span><span class="regexp">/conf/</span>ssl<span class="regexp">/ /</span>etc<span class="regexp">/nginx/</span>ssl</span><br><span class="line">(umask <span class="number">077</span>;openssl genrsa -out <span class="regexp">/etc/</span>nginx<span class="regexp">/ssl/</span>nginx.key <span class="number">2048</span>)</span><br></pre></td></tr></table></figure>
+<p>3.生成证书签署请求：<code>openssl req -new -key /etc/nginx/ssl/nginx.key -out /etc/nginx/ssl/nginx.csr</code></p>
+<p>需要注意的是，填写的信息需要与 CA 端保持一致，Organization Name 也必须保持一致。</p>
+<p><img src="https://blog-1257171343.cos.ap-chengdu.myqcloud.com/03-09-%E5%AE%A2%E6%88%B7%E7%AB%AF%E7%94%B3%E8%AF%B7%E8%AF%81%E4%B9%A6.png" alt=""></p>
+<p>4.将签署请求文件 nginx.csr发送给 CA 服务</p>
+<p><strong>CA 签署请求文件</strong></p>
+<p>1.签署请求文件：<code>openssl ca -in /tmp/nginx.csr -out /tmp/nginx.crt -days 365</code></p>
+<p><img src="https://blog-1257171343.cos.ap-chengdu.myqcloud.com/03-10-CA%20%E7%AD%BE%E7%BD%B2%E8%AF%B7%E6%B1%82.png" alt=""></p>
+<p>2.将证书发送给请求客户端</p>
+<p>3.其他：CA 吊销证书<code>openssl ca -revoke nginx.crt</code></p>
+<p><strong>站点部署证书</strong></p>
+<p>将证书保存在/etc/nginx/ssl/目录下，由于之前编译安装的 nginx，默认没有将ssl_module编译，所以需要重新将带有 ssl 模块一同编译nginx。</p>
+<p><img src="https://blog-1257171343.cos.ap-chengdu.myqcloud.com/03-11-%E6%9F%A5%E7%9C%8B%20nginx%20%E7%BC%96%E8%AF%91%E5%8F%82%E6%95%B0.png" alt=""></p>
+<p>回到 Nginx 源码目录下，加上 SSL 模块，再次编译：</p>
+<figure class="highlight jboss-cli"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">./configure</span> <span class="params">--prefix=/usr/nginx-1</span>.14.2/ <span class="params">--with-http_ssl_module</span></span><br><span class="line">make</span><br></pre></td></tr></table></figure>
+<p>由于当前操作是升级操作，之前使用的 Nginx 配置文件等不能被覆盖，所以不能使用<code>make install</code>，需要备份原nginx 二进制文件，将新的 nginx 二进制文件覆盖即可</p>
+<figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cp <span class="regexp">/usr/</span>nginx-<span class="number">1.14</span>.<span class="number">2</span><span class="regexp">/sbin/</span>nginx <span class="regexp">/usr/</span>nginx-<span class="number">1.14</span>.<span class="number">2</span><span class="regexp">/sbin/</span>nginx.without_ssl.bak</span><br><span class="line">cp <span class="regexp">/tmp/</span>nginx-<span class="number">1.14</span>.<span class="number">2</span><span class="regexp">/objs/</span>nginx <span class="regexp">/usr/</span>nginx-<span class="number">1.14</span>.<span class="number">2</span><span class="regexp">/sbin/</span>nginx</span><br></pre></td></tr></table></figure>
+<p>objs/nginx是新编译的 nginx 程序，覆盖原 nginx 程序，启动 nginx。</p>
+<p><strong>修改nginx配置文件，开启 https</strong></p>
+<figure class="highlight nginx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">server</span> &#123;</span><br><span class="line">        <span class="attribute">listen</span>  <span class="number">443</span>; <span class="comment">#监听端口为443</span></span><br><span class="line">        <span class="attribute">server_name</span> devops.yellowdog.com;</span><br><span class="line"></span><br><span class="line">        <span class="attribute">ssl</span> <span class="literal">on</span>; <span class="comment">#开启 ssl</span></span><br><span class="line">        <span class="attribute">ssl_certificate</span> /etc/nginx/ssl/nginx.crt; <span class="comment">#证书位置</span></span><br><span class="line">        <span class="attribute">ssl_certificate_key</span> /etc/nginx/ssl/nginx.key; <span class="comment">#私钥位置</span></span><br><span class="line">        <span class="attribute">ssl_session_timeout</span> <span class="number">5m</span>; </span><br><span class="line">        <span class="attribute">ssl_protocols</span> SSLv2 SSLv3 TLSv1; <span class="comment">#指定密码为 openssl 支持的格式</span></span><br><span class="line">        <span class="attribute">ssl_ciphers</span> HIGH:!aNull:!MD5; <span class="comment">#密码加密方式</span></span><br><span class="line">        <span class="attribute">ssl_prefer_server_ciphers</span> <span class="literal">on</span>; <span class="comment">#依赖 SSLv3和 TLSv1协议的服务器密码将优先于客户端密码</span></span><br><span class="line">        <span class="attribute">location</span> / &#123;</span><br><span class="line">            <span class="attribute">alias</span> dlib/; <span class="comment">#根目录相对位置</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>另外还设置将80端口的访问重定向至443端口</p>
+<figure class="highlight nginx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">server</span> &#123;</span><br><span class="line">	<span class="attribute">listen</span>       <span class="number">80</span>;</span><br><span class="line">    <span class="attribute">server_name</span>  devops.yellowdog.com;</span><br><span class="line">    <span class="attribute">rewrite</span><span class="regexp"> ^(.*)$</span> https://<span class="variable">$server_name</span><span class="variable">$1</span> <span class="literal">permanent</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>部署 https 站点总体不难，但重点要理解安全通信中的原理。</p>
+<p>推荐文章：<a href="http://xxrenzhe.blog.51cto.com/4036116/1370114" target="_blank" rel="noopener">图解openssl实现私有CA</a></p>
+
+
+                <hr>
+
+                
+
+                <ul class="pager">
+                    
+                    
+                        <li class="next">
+                            <a href="/2019/03/18/Nginx-2-创建具有缓存功能的反向代理服务器/" data-toggle="tooltip" data-placement="top" title="Nginx(2)-创建具有缓存功能的反向代理服务器">Next Post &rarr;</a>
+                        </li>
+                    
+                </ul>
+
+                
+
+                
+                <!-- disqus 评论框 start -->
+                <div class="comment">
+                    <div id="disqus_thread" class="disqus-thread"></div>
+                </div>
+                <!-- disqus 评论框 end -->
+                
+
+            </div>
+    <!-- Side Catalog Container -->
+        
+
+    <!-- Sidebar Container -->
+
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <!-- no hr -->
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                       
+                          <a class="tag" href="/tags/#Nginx" title="Nginx">Nginx</a>
+                        
+                    </div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>FRIENDS</h5>
+                <ul class="list-inline">
+
+                    
+                        <li><a href="#" target="_blank">留着</a></li>
+                    
+                        <li><a href="#" target="_blank">也留着</a></li>
+                    
+                </ul>
+                
+            </div>
+
+        </div>
+    </div>
+</article>
+
+
+
+
+<!-- disqus 公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = "hexo-theme-huxblog";
+    var disqus_identifier = "https://simontage.github.io/2019/03/18/Nginx-3-加密算法和安全协议https/";
+    var disqus_url = "https://simontage.github.io/2019/03/18/Nginx-3-加密算法和安全协议https/";
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<!-- disqus 公共JS代码 end -->
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("https://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'always',
+          placement: 'right',
+          icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+
+    <!-- Footer -->
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                
+                
+                
+
+                
+
+                
+
+                
+
+                
+
+                </ul>
+                <p class="copyright text-muted">
+                    Copyright &copy; Manson&#39;s Notes 2019 
+                    <br>
+                    Theme by <a href="http://huangxuan.me">Hux</a> 
+                    <span style="display: inline-block; margin: 0 5px;">
+                        <i class="fa fa-heart"></i>
+                    </span> 
+                    Ported by <a href="http://blog.kaijun.rocks">Kaijun</a> | 
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="91px" height="20px"
+                        src="https://ghbtns.com/github-btn.html?user=kaijun&repo=hexo-theme-huxblog&type=star&count=true" >
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js"></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js"></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/hux-blog.min.js"></script>
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/    
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("https://simontage.github.io/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("https://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+<script>
+    // dynamic User by Hux
+    var _gaId = 'UA-49627206-1';
+    var _gaDomain = 'null';
+
+    // Originial
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', _gaId, _gaDomain);
+    ga('send', 'pageview');
+</script>
+
+
+
+
+<!-- Baidu Tongji -->
+
+
+<!-- Side Catalog -->
+
+
+
+
+
+<!-- Image to hack wechat -->
+<img src="https://simontage.github.io/img/icon_wechat.png" width="0" height="0" />
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>
